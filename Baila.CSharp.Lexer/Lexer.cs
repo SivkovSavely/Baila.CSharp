@@ -147,6 +147,8 @@ public class Lexer(string source, string filename)
     public List<Token> Tokenize()
     {
         var state = LexerState.Value;
+        var parenthesisParity = 0;
+        var bracketParity = 0;
 
         // Checking for ParseState.Value implies that
         //   you are tokenizing either value or something that should precede a value
@@ -271,12 +273,59 @@ public class Lexer(string source, string filename)
                 Next();
                 TokenizeComment();
             }
+            else if (parenthesisParity == 0 && bracketParity == 0 && currentChar == '\n')
+            {
+                Next();
+                if (_tokens.Count > 0)
+                {
+                    var lastToken = _tokens.Last();
+                    if (lastToken.Type != TokenType.LeftParen
+                        && lastToken.Type != TokenType.LeftBracket
+                        && lastToken.Type != TokenType.LeftCurly)
+                    {
+                        AddToken(TokenType.EndOfLine, "EOL");
+                    }
+                }
+            }
             else
             {
                 // Whitespace
                 Next();
+                continue;
+            }
+
+            if (_tokens.Count > 0)
+            {
+                var lastToken = _tokens.Last();
+                if (lastToken.Type == TokenType.LeftParen)
+                {
+                    parenthesisParity++;
+                }
+                else if (lastToken.Type == TokenType.RightParen)
+                {
+                    parenthesisParity--;
+                }
+                else if (lastToken.Type == TokenType.LeftBracket)
+                {
+                    bracketParity++;
+                }
+                else if (lastToken.Type == TokenType.LeftBracket)
+                {
+                    bracketParity--;
+                }
             }
         }
+
+        if (_tokens.Count > 0)
+        {
+            var lastToken = _tokens.Last();
+            if (lastToken.Type != TokenType.EndOfLine)
+            {
+                AddToken(TokenType.EndOfLine);
+            }
+        }
+
+        AddToken(TokenType.EndOfFile);
 
         return _tokens;
     }
@@ -540,7 +589,6 @@ public class Lexer(string source, string filename)
         var currentChar = Current();
         while (HasChars())
         {
-
             if (currentChar == '`')
                 break;
             if (currentChar == '\0')
@@ -548,6 +596,7 @@ public class Lexer(string source, string filename)
             _buffer.Append(currentChar);
             currentChar = Next();
         }
+
         Next(); // Skip closing quote
         AddToken(TokenType.StringLiteral, _buffer.ToString());
     }
@@ -569,7 +618,7 @@ public class Lexer(string source, string filename)
         }
 
         var op = _buffer.ToString();
-        AddToken(_operatorMap[op], op);
+        AddToken(_operatorMap[op]);
     }
 
     private void TokenizeIdentifier()
@@ -589,9 +638,14 @@ public class Lexer(string source, string filename)
         }
 
         var ident = _buffer.ToString();
-        AddToken(
-            _keywordMap.TryGetValue(ident, out var token) ? token : TokenType.Identifier,
-            ident);
+        if (_keywordMap.TryGetValue(ident, out var token))
+        {
+            AddToken(token);
+        }
+        else
+        {
+            AddToken(TokenType.Identifier, ident);
+        }
     }
 
     private void TokenizeComment()
@@ -639,7 +693,7 @@ public class Lexer(string source, string filename)
         AddToken(TokenType.RegexLiteral, $"/{_buffer}/{flags}");
     }
 
-    private void AddToken(TokenType type, string value)
+    private void AddToken(TokenType type, string? value = null)
     {
         _tokens.Add(new Token(_cursor.Clone(), type, value));
     }
@@ -667,7 +721,7 @@ public class Lexer(string source, string filename)
         {
             _cursor.Line++;
             _cursor.Column = 1;
-            _cursor.Position++; // skip newline
+            // _cursor.Position++; // skip newline
         }
 
         return Current();

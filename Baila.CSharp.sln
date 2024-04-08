@@ -6,7 +6,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Lexer", "Baila
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Parser", "Baila.CSharp.Parser\Baila.CSharp.Parser.csproj", "{1DF68365-795C-480E-B33B-A60B5BFFEF0B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Interpreter", "Baila.CSharp.Interpreter\Baila.CSharp.Interpreter.csproj", "{A94D0B94-D4B7-496B-8C4E-2C45F1B90EE7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Lexer.Tests", "Baila.CSharp.Lexer.Tests\Baila.CSharp.Lexer.Tests.csproj", "{E3E21D5A-BAE9-4545-A517-59E8B605E951}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Ast", "Baila.CSharp.Ast\Baila.CSharp.Ast.csproj", "{87F19751-1C00-4EA8-AE34-E4D7410FC59E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Parser.Tests", "Baila.CSharp.Parser.Tests\Baila.CSharp.Parser.Tests.csproj", "{D007E9DB-5840-465E-88FC-A25F3A63A080}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,9 +32,21 @@ Global
 		{1DF68365-795C-480E-B33B-A60B5BFFEF0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DF68365-795C-480E-B33B-A60B5BFFEF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DF68365-795C-480E-B33B-A60B5BFFEF0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A94D0B94-D4B7-496B-8C4E-2C45F1B90EE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A94D0B94-D4B7-496B-8C4E-2C45F1B90EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A94D0B94-D4B7-496B-8C4E-2C45F1B90EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A94D0B94-D4B7-496B-8C4E-2C45F1B90EE7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E3E21D5A-BAE9-4545-A517-59E8B605E951}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E3E21D5A-BAE9-4545-A517-59E8B605E951}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3E21D5A-BAE9-4545-A517-59E8B605E951}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3E21D5A-BAE9-4545-A517-59E8B605E951}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87F19751-1C00-4EA8-AE34-E4D7410FC59E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87F19751-1C00-4EA8-AE34-E4D7410FC59E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87F19751-1C00-4EA8-AE34-E4D7410FC59E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87F19751-1C00-4EA8-AE34-E4D7410FC59E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

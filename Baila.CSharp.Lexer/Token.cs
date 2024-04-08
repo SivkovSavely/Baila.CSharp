@@ -1,6 +1,6 @@
 ﻿namespace Baila.CSharp.Lexer;
 
-public readonly record struct Token(Cursor Cursor, TokenType Type, string? Value = null)
+public record Token(Cursor Cursor, TokenType Type, string? Value = null)
 {
     public override string ToString()
     {

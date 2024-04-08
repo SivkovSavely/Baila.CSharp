@@ -2,7 +2,7 @@
 
 namespace Baila.CSharp.Lexer;
 
-public class Lexer(string source, string filename)
+public class Lexer(string source, string filename, LexerMode mode = LexerMode.Regular)
 {
     private readonly Cursor _cursor = new(0, 1, 1, filename);
     private readonly List<Token> _tokens = [];
@@ -276,7 +276,7 @@ public class Lexer(string source, string filename)
             else if (parenthesisParity == 0 && bracketParity == 0 && currentChar == '\n')
             {
                 Next();
-                if (_tokens.Count > 0)
+                if (_tokens.Count > 0 && mode == LexerMode.Regular)
                 {
                     var lastToken = _tokens.Last();
                     if (lastToken.Type != TokenType.LeftParen
@@ -315,17 +315,20 @@ public class Lexer(string source, string filename)
                 }
             }
         }
-
-        if (_tokens.Count > 0)
+        
+        if (mode == LexerMode.Regular)
         {
-            var lastToken = _tokens.Last();
-            if (lastToken.Type != TokenType.EndOfLine)
+            if (_tokens.Count > 0)
             {
-                AddToken(TokenType.EndOfLine);
+                var lastToken = _tokens.Last();
+                if (lastToken.Type != TokenType.EndOfLine)
+                {
+                    AddToken(TokenType.EndOfLine);
+                }
             }
-        }
 
-        AddToken(TokenType.EndOfFile);
+            AddToken(TokenType.EndOfFile);
+        }
 
         return _tokens;
     }
@@ -450,19 +453,58 @@ public class Lexer(string source, string filename)
         _buffer.Clear();
         var currentChar = Current();
         var unclosedCurlies = 0;
+        var isInterpolated = false;
+        List<Token>? interpolatedStringTokens = null;
         while (HasChars())
         {
             switch (currentChar)
             {
-                case '{':
-                    currentChar = Next();
+                case '$' when Peek(1) == '{':
+                    isInterpolated = true;
+                    Next(); // skip $
+                    currentChar = Next(); // skip {
                     unclosedCurlies++;
-                    _buffer.Append('{');
+                    interpolatedStringTokens ??= [];
+                    if (_buffer.Length > 0)
+                    {
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+                        interpolatedStringTokens.Add(
+                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                        _buffer.Clear();
+                    }
+
                     continue;
                 case '}':
-                    currentChar = Next();
+                    currentChar = Next(); // skip }
                     unclosedCurlies--;
-                    _buffer.Append('}');
+                    if (unclosedCurlies == 0)
+                    {
+                        if (_buffer.Length == 0)
+                        {
+                            throw new Exception("Syntax error: empty interpolated string expression");
+                        }
+
+                        if (interpolatedStringTokens == null)
+                        {
+                            throw new Exception("Syntax error: unexpected string expression closing brace");
+                        }
+
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+
+                        var lexer = new Lexer(_buffer.ToString(), _cursor.Filename, LexerMode.InterpolatedString);
+                        var expressionTokens = lexer.Tokenize();
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.LeftParen));
+                        interpolatedStringTokens.AddRange(expressionTokens);
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.RightParen));
+                        _buffer.Clear();
+                    }
+
                     continue;
                 case '\\':
                     currentChar = Next();
@@ -510,8 +552,31 @@ public class Lexer(string source, string filename)
 
         if (unclosedCurlies != 0)
             throw new Exception("Syntax error: Unbalanced curly brackets inside template string");
+
         Next(); // Skip closing quote
-        AddToken(TokenType.StringLiteral, _buffer.ToString());
+
+        if (isInterpolated)
+        {
+            if (_buffer.Length > 0)
+            {
+                if (interpolatedStringTokens!.Count != 0)
+                {
+                    interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                }
+                interpolatedStringTokens.Add(
+                    new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                _buffer.Clear();
+            }
+            
+            AddToken(TokenType.PrivateStringConcat);
+            AddToken(TokenType.LeftParen);
+            _tokens.AddRange(interpolatedStringTokens!);
+            AddToken(TokenType.RightParen);
+        }
+        else
+        {
+            AddToken(TokenType.StringLiteral, _buffer.ToString());
+        }
     }
 
     private void TokenizeDoubleString()
@@ -519,19 +584,96 @@ public class Lexer(string source, string filename)
         _buffer.Clear();
         var currentChar = Current();
         var unclosedCurlies = 0;
+        var isInterpolated = false;
+        var isTokenizingSimpleIdentifierInterpolation = false;
+        List<Token>? interpolatedStringTokens = null;
         while (HasChars())
         {
+            if (isTokenizingSimpleIdentifierInterpolation)
+            {
+                if (!IsIdentifierContinuation(currentChar))
+                {
+                    isTokenizingSimpleIdentifierInterpolation = false;
+                    if (interpolatedStringTokens!.Count != 0)
+                    {
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                    }
+                    interpolatedStringTokens.Add(
+                        new Token(_cursor.Clone(), TokenType.Identifier, _buffer.ToString()));
+                    _buffer.Clear();
+                    continue;
+                }
+
+                _buffer.Append(currentChar);
+                currentChar = Next();
+                continue;
+            }
+
             switch (currentChar)
             {
-                case '{':
-                    currentChar = Next();
+                case '$' when Peek(1) == '{':
+                    isInterpolated = true;
+                    Next(); // skip $
+                    currentChar = Next(); // skip {
                     unclosedCurlies++;
-                    _buffer.Append('{');
+                    interpolatedStringTokens ??= [];
+                    if (_buffer.Length > 0)
+                    {
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+                        interpolatedStringTokens.Add(
+                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                        _buffer.Clear();
+                    }
+
+                    continue;
+                case '$' when IsIdentifierStart(Peek(1)):
+                    isInterpolated = true;
+                    isTokenizingSimpleIdentifierInterpolation = true;
+                    currentChar = Next(); // skip $
+                    interpolatedStringTokens ??= [];
+                    if (_buffer.Length > 0)
+                    {
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+                        interpolatedStringTokens.Add(
+                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                        _buffer.Clear();
+                    }
+
                     continue;
                 case '}':
-                    currentChar = Next();
+                    currentChar = Next(); // skip }
                     unclosedCurlies--;
-                    _buffer.Append('}');
+                    if (unclosedCurlies == 0)
+                    {
+                        if (_buffer.Length == 0)
+                        {
+                            throw new Exception("Syntax error: empty interpolated string expression");
+                        }
+
+                        if (interpolatedStringTokens == null)
+                        {
+                            throw new Exception("Syntax error: unexpected string expression closing brace");
+                        }
+
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+
+                        var lexer = new Lexer(_buffer.ToString(), _cursor.Filename, LexerMode.InterpolatedString);
+                        var expressionTokens = lexer.Tokenize();
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.LeftParen));
+                        interpolatedStringTokens.AddRange(expressionTokens);
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.RightParen));
+                        _buffer.Clear();
+                    }
+
                     continue;
                 case '\\':
                     currentChar = Next();
@@ -579,8 +721,31 @@ public class Lexer(string source, string filename)
 
         if (unclosedCurlies != 0)
             throw new Exception("Syntax error: Unbalanced curly brackets inside template string");
+
         Next(); // Skip closing quote
-        AddToken(TokenType.StringLiteral, _buffer.ToString());
+
+        if (isInterpolated)
+        {
+            if (_buffer.Length > 0)
+            {
+                if (interpolatedStringTokens!.Count != 0)
+                {
+                    interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                }
+                interpolatedStringTokens.Add(
+                    new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                _buffer.Clear();
+            }
+            
+            AddToken(TokenType.PrivateStringConcat);
+            AddToken(TokenType.LeftParen);
+            _tokens.AddRange(interpolatedStringTokens!);
+            AddToken(TokenType.RightParen);
+        }
+        else
+        {
+            AddToken(TokenType.StringLiteral, _buffer.ToString());
+        }
     }
 
     private void TokenizeVerbatimString()

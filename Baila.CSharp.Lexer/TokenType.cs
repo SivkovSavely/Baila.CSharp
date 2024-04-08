@@ -145,4 +145,7 @@ public record TokenType(string Type)
     public static readonly TokenType IsNot = new("!is");
     public static readonly TokenType As = new("as");
     public static readonly TokenType NullableAs = new("?as");
+    
+    // private tokens: these are reserved for internal language use and are not able to be lexed from source code
+    public static readonly TokenType PrivateStringConcat = new("[[string_concat]]");
 }

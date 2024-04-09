@@ -20,4 +20,9 @@
         <Using Include="Xunit"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Baila.CSharp.Lexer\Baila.CSharp.Lexer.csproj" />
+      <ProjectReference Include="..\Baila.CSharp.Parser\Baila.CSharp.Parser.csproj" />
+    </ItemGroup>
+
 </Project>

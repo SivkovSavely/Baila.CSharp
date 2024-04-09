@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Interpreter.StatementInterpreters;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Parser;
 
 Console.WriteLine("Hello from Baila");
@@ -20,4 +21,7 @@ while (true)
     var ast = parser.BuildAst();
     Console.WriteLine("PROGRAM AST:");
     Console.WriteLine(ast);
+
+    Console.WriteLine("PROGRAM RUNNING:");
+    ast.InterpretExecute();
 }

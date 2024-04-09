@@ -43,3 +43,8 @@ public static class ExpressionInterpreter
         return value.Interpret(expression);
     }
 }
+
+public static class ExpressionExtensions
+{
+    public static IValue InterpretEvaluate(this IExpression expression) => ExpressionInterpreter.Interpret(expression);
+}

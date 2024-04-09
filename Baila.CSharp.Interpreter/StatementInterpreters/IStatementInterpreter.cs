@@ -40,3 +40,8 @@ public static class StatementInterpreter
         value.Interpret(statement);
     }
 }
+
+public static class StatementExtensions
+{
+    public static void InterpretExecute(this IStatement expression) => StatementInterpreter.Interpret(expression);
+}

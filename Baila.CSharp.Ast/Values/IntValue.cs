@@ -2,7 +2,7 @@
 
 namespace Baila.CSharp.Ast.Values;
 
-public class IntValue(int value) : IValue
+public class IntValue(long value) : IValue
 {
     public long GetAsInteger()
     {

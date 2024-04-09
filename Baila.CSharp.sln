@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Ast", "Baila.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Parser.Tests", "Baila.CSharp.Parser.Tests\Baila.CSharp.Parser.Tests.csproj", "{D007E9DB-5840-465E-88FC-A25F3A63A080}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Typing", "Baila.CSharp.Typing\Baila.CSharp.Typing.csproj", "{B9E1453D-3609-45CF-ABC5-73AC5E00C2FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D007E9DB-5840-465E-88FC-A25F3A63A080}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9E1453D-3609-45CF-ABC5-73AC5E00C2FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9E1453D-3609-45CF-ABC5-73AC5E00C2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9E1453D-3609-45CF-ABC5-73AC5E00C2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9E1453D-3609-45CF-ABC5-73AC5E00C2FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

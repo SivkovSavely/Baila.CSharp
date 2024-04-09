@@ -1,6 +1,4 @@
-﻿using Baila.CSharp.Ast.Values;
-
-namespace Baila.CSharp.Ast.Expressions;
+﻿namespace Baila.CSharp.Ast.Expressions;
 
 public class BinaryExpression(BinaryExpression.Operation operation, IExpression left, IExpression right) : IExpression
 {
@@ -30,12 +28,6 @@ public class BinaryExpression(BinaryExpression.Operation operation, IExpression 
         public static readonly Operation Power = new("**");
 
         public override string ToString() => Op;
-    }
-
-    public IValue Evaluate()
-    {
-        // TODO assign to variable
-        return null;
     }
 
     public string Stringify()

@@ -2,33 +2,15 @@
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class IfElseStatement : IStatement
+public class IfElseStatement(
+    IExpression condition,
+    IStatement trueStatement,
+    IStatement? falseStatement)
+    : IStatement
 {
-    public IExpression Condition { get; }
-    public IStatement TrueStatement { get; }
-    public IStatement? FalseStatement { get; }
-
-    public IfElseStatement(
-        IExpression condition,
-        IStatement trueStatement,
-        IStatement? falseStatement)
-    {
-        Condition = condition;
-        TrueStatement = trueStatement;
-        FalseStatement = falseStatement;
-    }
-
-    public void Execute()
-    {
-        if (Condition.Evaluate().GetAsBoolean())
-        {
-            TrueStatement.Execute();
-        }
-        else
-        {
-            FalseStatement?.Execute();
-        }
-    }
+    public IExpression Condition { get; } = condition;
+    public IStatement TrueStatement { get; } = trueStatement;
+    public IStatement? FalseStatement { get; } = falseStatement;
 
     public override string ToString()
     {

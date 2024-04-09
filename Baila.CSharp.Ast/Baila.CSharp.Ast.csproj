@@ -6,8 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Baila.CSharp.Interpreter\Baila.CSharp.Interpreter.csproj" />
-    </ItemGroup>
-
 </Project>

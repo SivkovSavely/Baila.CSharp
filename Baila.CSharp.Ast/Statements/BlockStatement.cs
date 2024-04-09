@@ -10,14 +10,6 @@ public class BlockStatement : IStatement
     {
         _statements.Add(statement);
     }
-    
-    public void Execute()
-    {
-        foreach (var statement in _statements)
-        {
-            statement.Execute();
-        }
-    }
 
     public override string ToString()
     {

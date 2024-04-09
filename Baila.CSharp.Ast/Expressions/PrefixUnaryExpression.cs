@@ -1,6 +1,4 @@
-﻿using Baila.CSharp.Ast.Values;
-
-namespace Baila.CSharp.Ast.Expressions;
+﻿namespace Baila.CSharp.Ast.Expressions;
 
 public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IExpression expr) : IExpression
 {
@@ -12,12 +10,6 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IE
         public static readonly Operation Minus = new("-");
 
         public override string ToString() => Op;
-    }
-
-    public IValue Evaluate()
-    {
-        // TODO assign to variable
-        return null;
     }
 
     public string Stringify()

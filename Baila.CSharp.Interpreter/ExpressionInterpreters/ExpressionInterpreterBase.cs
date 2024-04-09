@@ -46,5 +46,9 @@ public static class ExpressionInterpreter
 
 public static class ExpressionExtensions
 {
-    public static IValue InterpretEvaluate(this IExpression expression) => ExpressionInterpreter.Interpret(expression);
+    public static IValue InterpretEvaluate(this IExpression expression)
+    {
+        Console.WriteLine($"[DEBUG] Eval {expression.GetType().Name} {expression.Stringify()}");
+        return ExpressionInterpreter.Interpret(expression);
+    }
 }

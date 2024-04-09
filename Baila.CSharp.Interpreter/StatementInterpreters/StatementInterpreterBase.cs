@@ -43,5 +43,9 @@ public static class StatementInterpreter
 
 public static class StatementExtensions
 {
-    public static void InterpretExecute(this IStatement expression) => StatementInterpreter.Interpret(expression);
+    public static void InterpretExecute(this IStatement expression)
+    {
+        Console.WriteLine($"[DEBUG] Exec {expression.GetType().Name} {expression}");
+        StatementInterpreter.Interpret(expression);
+    }
 }

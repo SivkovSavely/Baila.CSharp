@@ -1,4 +1,6 @@
-﻿namespace Baila.CSharp.Ast.Values;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Values;
 
 public class BooleanValue(bool value) : IValue
 {
@@ -20,5 +22,10 @@ public class BooleanValue(bool value) : IValue
     public string GetAsString()
     {
         return value ? "true" : "false";
+    }
+
+    public BailaType GetBailaType()
+    {
+        return BailaType.Bool;
     }
 }

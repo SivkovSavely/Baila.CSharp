@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Baila.CSharp.Ast\Baila.CSharp.Ast.csproj" />
+      <ProjectReference Include="..\Baila.CSharp.Typing\Baila.CSharp.Typing.csproj" />
     </ItemGroup>
 
 </Project>

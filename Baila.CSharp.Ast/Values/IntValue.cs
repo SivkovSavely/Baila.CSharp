@@ -1,4 +1,6 @@
-﻿namespace Baila.CSharp.Ast.Values;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Values;
 
 public class IntValue(int value) : IValue
 {
@@ -20,5 +22,10 @@ public class IntValue(int value) : IValue
     public string GetAsString()
     {
         return value.ToString();
+    }
+
+    public BailaType GetBailaType()
+    {
+        return BailaType.Int;
     }
 }

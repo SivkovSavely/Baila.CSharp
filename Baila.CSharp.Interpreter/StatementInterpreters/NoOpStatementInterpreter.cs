@@ -6,6 +6,5 @@ public class NoOpStatementInterpreter : StatementInterpreterBase<NoOpStatement>
 {
     public override void Interpret(NoOpStatement statement)
     {
-        throw new NotImplementedException();
     }
 }

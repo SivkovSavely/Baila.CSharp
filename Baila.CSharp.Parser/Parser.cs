@@ -29,7 +29,7 @@ public class Parser(List<Token> tokens)
             return new NoOpStatement();
         }
 
-        IStatement? stmt = null;
+        IStatement stmt;
 
         if (Match(TokenType.If))
         {
@@ -37,19 +37,59 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.For))
         {
-            // stmt = ForStatement();
+            stmt = ForStatement();
         }
         else if (Match(TokenType.While))
         {
-            // stmt = WhileStatement();
+            stmt = WhileStatement();
         }
         else if (Match(TokenType.Do))
         {
-            // stmt = DoWhileStatement();
+            stmt = DoWhileStatement();
         }
         else if (Match(TokenType.Var))
         {
+            // TODO variable declaration
+            throw new NotImplementedException();
         }
+        else if (Match(TokenType.Const))
+        {
+            // TODO constant declaration
+            throw new NotImplementedException();
+        }
+        else if (Match(TokenType.Function))
+        {
+            // TODO function declaration
+            throw new NotImplementedException();
+        }
+        else if (Match(TokenType.Return))
+        {
+            // TODO return statement
+            throw new NotImplementedException();
+        }
+        else if (Match(TokenType.Break))
+        {
+            // TODO break statement
+            throw new NotImplementedException();
+        }
+        else if (Match(TokenType.Continue))
+        {
+            // TODO continue statement
+            throw new NotImplementedException();
+        }
+        else if (Match(TokenType.Class))
+        {
+            // TODO class declaration
+            throw new NotImplementedException();
+        }
+        else
+        {
+            // TODO stmt = expression statement
+            throw new NotImplementedException();
+        }
+        
+        // TODO require end of line or semicolon at the end of the statement
+        // TODO skip end of line or semicolon token
 
         if (stmt == null)
         {
@@ -70,6 +110,62 @@ public class Parser(List<Token> tokens)
         }
 
         return new IfElseStatement(condition, trueStmt, falseStmt);
+    }
+
+    private IStatement ForStatement()
+    {
+        var optionalLeftParen = Match(TokenType.LeftParen);
+
+        var counterVariable = Consume(TokenType.Identifier).Value!;
+        Consume(TokenType.Eq);
+        var initialValue = Expression();
+
+        if (!(Get().Type == TokenType.Identifier && Get().Value == "to"))
+        {
+            throw new Exception(
+                "Syntax error: 'to' expected in 'for' loop. For C-like style of 'for' loop, please use 'while' instead");
+        }
+
+        Match(TokenType.Identifier);
+
+        var finalValue = Expression();
+
+        IExpression stepValue;
+        if (Get().Type == TokenType.Identifier && Get().Value == "step")
+        {
+            Match(TokenType.Identifier);
+            stepValue = Expression();
+        }
+        else
+        {
+            stepValue = new ValueExpression(new IntValue(1));            
+        }
+
+        if (optionalLeftParen)
+        {
+            Match(TokenType.RightParen);
+        }
+
+        var body = StatementOrBlock();
+
+        return new ForStatement(counterVariable, initialValue, finalValue, stepValue, body);
+    }
+
+    private IStatement WhileStatement()
+    {
+        var condition = Expression();
+        var body = StatementOrBlock();
+
+        return new WhileStatement(condition, body);
+    }
+
+    private IStatement DoWhileStatement()
+    {
+        var body = StatementOrBlock();
+        Consume(TokenType.While);
+        var condition = Expression();
+
+        return new DoWhileStatement(condition, body);
     }
 
     private IStatement StatementOrBlock()

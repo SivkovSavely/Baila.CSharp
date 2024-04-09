@@ -7,6 +7,6 @@ public class ValueExpressionInterpreter : ExpressionInterpreterBase<ValueExpress
 {
     public override IValue Interpret(ValueExpression expression)
     {
-        throw new NotImplementedException();
+        return expression.Value;
     }
 }

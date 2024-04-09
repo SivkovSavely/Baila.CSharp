@@ -3,7 +3,7 @@ using Baila.CSharp.Interpreter.ExpressionInterpreters;
 
 namespace Baila.CSharp.Interpreter.Factories;
 
-public class ExpressionInterpreterFactory
+public static class ExpressionInterpreterFactory
 {
     public static ExpressionInterpreterBase Create(IExpression expression)
     {

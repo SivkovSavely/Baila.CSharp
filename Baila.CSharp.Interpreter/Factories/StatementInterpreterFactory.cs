@@ -3,12 +3,18 @@ using Baila.CSharp.Interpreter.StatementInterpreters;
 
 namespace Baila.CSharp.Interpreter.Factories;
 
-public class StatementInterpreterFactory
+public static class StatementInterpreterFactory
 {
     public static StatementInterpreterBase Create(IStatement statement)
     {
         return statement switch
         {
+            BlockStatement => new BlockStatementInterpreter(),
+            DoWhileStatement => new DoWhileStatementInterpreter(),
+            ForStatement => new ForStatementInterpreter(),
+            IfElseStatement => new IfElseStatementInterpreter(),
+            NoOpStatement => new NoOpStatementInterpreter(),
+            WhileStatement => new WhileStatementInterpreter(),
             _ => throw new InvalidOperationException(
                 $"Statement is of invalid type: {statement.GetType().FullName}")
         };

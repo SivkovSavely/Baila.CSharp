@@ -2,6 +2,7 @@
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Ast.Values;
 using Baila.CSharp.Lexer;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Parser;
 
@@ -49,8 +50,21 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Var))
         {
-            // TODO variable declaration
-            throw new NotImplementedException();
+            var name = Consume(TokenType.Identifier).Value!;
+            BailaType? type = null;
+            IExpression? value = null;
+
+            if (Match(TokenType.Colon))
+            {
+                type = Type();
+            }
+
+            if (Match(TokenType.Eq))
+            {
+                value = Expression();
+            }
+
+            stmt = new VariableDefineStatement(name, type, value);
         }
         else if (Match(TokenType.Const))
         {
@@ -97,6 +111,33 @@ public class Parser(List<Token> tokens)
         }
 
         return stmt;
+    }
+
+    private BailaType Type()
+    {
+        // nullable check
+        var isNullable = Match(TokenType.Question);
+        
+        // generics
+        List<BailaType>? genericsList = null;
+        if (Match(TokenType.Lt)) // TODO support LtLt e.g. <<Int>List>List
+        {
+            genericsList = new();
+            while (!Match(TokenType.Gt))
+            {
+                var genericType = Type();
+                genericsList.Add(genericType);
+
+                if (Match(TokenType.Gt)) break;
+
+                Consume(TokenType.Comma);
+            }
+        }
+        
+        // type name
+        var result = new BailaType(Consume(TokenType.Identifier).Value!, isNullable, genericsList);
+
+        return result;
     }
 
     private IStatement IfElseStatement()

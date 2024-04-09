@@ -28,4 +28,9 @@ public class StringValue(string value) : IValue
     {
         return BailaType.String;
     }
+
+    public override string ToString()
+    {
+        return $"StringValue({value})";
+    }
 }

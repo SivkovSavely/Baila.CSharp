@@ -13,7 +13,11 @@ public class BlockStatement : IStatement
 
     public override string ToString()
     {
-        return $"Statements({_statements.Count}) {{\n" +
+        if (_statements.Count == 0)
+        {
+            return $"BlockStatement(Count={_statements.Count}) {{}}";
+        }
+        return $"BlockStatement(Count={_statements.Count}) {{\n" +
                string.Join("\n", _statements) +
                $"\n}}";
     }

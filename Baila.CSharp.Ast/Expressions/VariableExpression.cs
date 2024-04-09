@@ -6,4 +6,9 @@ public class VariableExpression(string name) : IExpression
     {
         return name;
     }
+
+    public override string ToString()
+    {
+        return $"VariableExpression({name})";
+    }
 }

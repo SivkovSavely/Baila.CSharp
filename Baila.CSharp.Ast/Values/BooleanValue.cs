@@ -28,4 +28,9 @@ public class BooleanValue(bool value) : IValue
     {
         return BailaType.Bool;
     }
+
+    public override string ToString()
+    {
+        return $"BooleanValue({value})";
+    }
 }

@@ -29,4 +29,9 @@ public class FloatValue(double value) : IValue
     {
         return BailaType.Float;
     }
+
+    public override string ToString()
+    {
+        return $"FloatValue({value})";
+    }
 }

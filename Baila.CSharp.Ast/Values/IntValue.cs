@@ -28,4 +28,9 @@ public class IntValue(long value) : IValue
     {
         return BailaType.Int;
     }
+
+    public override string ToString()
+    {
+        return $"IntValue({value})";
+    }
 }

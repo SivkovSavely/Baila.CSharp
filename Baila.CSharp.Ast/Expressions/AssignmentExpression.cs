@@ -6,4 +6,9 @@ public class AssignmentExpression(string target, IExpression expression) : IExpr
     {
         return $"{target} = {expression.Stringify()}";
     }
+
+    public override string ToString()
+    {
+        return $"AssignmentExpression({target} = {expression})";
+    }
 }

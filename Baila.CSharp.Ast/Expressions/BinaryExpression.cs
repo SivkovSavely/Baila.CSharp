@@ -34,4 +34,9 @@ public class BinaryExpression(BinaryExpression.Operation operation, IExpression 
     {
         return $"{left.Stringify()} {operation} {right.Stringify()}";
     }
+
+    public override string ToString()
+    {
+        return $"BinaryExpression({left} {operation} {right})";
+    }
 }

@@ -16,4 +16,9 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IE
     {
         return $"{operation} {expr.Stringify()}";
     }
+
+    public override string ToString()
+    {
+        return $"PrefixUnaryExpression({operation} {expr})";
+    }
 }

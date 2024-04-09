@@ -8,4 +8,9 @@ public class ValueExpression(IValue value) : IExpression
     {
         return value.GetAsString();
     }
+
+    public override string ToString()
+    {
+        return $"ValueExpression({value})";
+    }
 }

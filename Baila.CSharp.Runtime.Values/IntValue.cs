@@ -1,13 +1,12 @@
-﻿using System.Globalization;
-using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Typing;
 
-namespace Baila.CSharp.Ast.Values;
+namespace Baila.CSharp.Runtime.Values;
 
-public class FloatValue(double value) : IValue
+public class IntValue(long value) : IValue
 {
     public long GetAsInteger()
     {
-        return (long)value;
+        return value;
     }
 
     public double GetAsFloat()
@@ -22,16 +21,16 @@ public class FloatValue(double value) : IValue
 
     public string GetAsString()
     {
-        return value.ToString(CultureInfo.InvariantCulture);
+        return value.ToString();
     }
 
     public BailaType GetBailaType()
     {
-        return BailaType.Float;
+        return BailaType.Int;
     }
 
     public override string ToString()
     {
-        return $"FloatValue({value})";
+        return $"IntValue({value})";
     }
 }

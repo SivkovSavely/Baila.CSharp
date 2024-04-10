@@ -1,36 +1,36 @@
 ﻿using Baila.CSharp.Typing;
 
-namespace Baila.CSharp.Ast.Values;
+namespace Baila.CSharp.Runtime.Values;
 
-public class BooleanValue(bool value) : IValue
+public class StringValue(string value) : IValue
 {
     public long GetAsInteger()
     {
-        return value ? 1 : 0;
+        return long.Parse(value);
     }
 
     public double GetAsFloat()
     {
-        return value ? 1 : 0;
+        return double.Parse(value);
     }
 
     public bool GetAsBoolean()
     {
-        return value;
+        return value.Length != 0;
     }
 
     public string GetAsString()
     {
-        return value ? "true" : "false";
+        return value;
     }
 
     public BailaType GetBailaType()
     {
-        return BailaType.Bool;
+        return BailaType.String;
     }
 
     public override string ToString()
     {
-        return $"BooleanValue({value})";
+        return $"StringValue({value})";
     }
 }

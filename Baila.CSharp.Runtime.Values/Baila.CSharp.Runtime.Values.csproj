@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Baila.CSharp.Runtime.Values\Baila.CSharp.Runtime.Values.csproj" />
       <ProjectReference Include="..\Baila.CSharp.Typing\Baila.CSharp.Typing.csproj" />
     </ItemGroup>
 

@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Typing", "Bail
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Interpreter.Tests", "Baila.CSharp.Interpreter.Tests\Baila.CSharp.Interpreter.Tests.csproj", "{3830C890-E667-46EC-9EC3-F8A313CBEE0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Values", "Baila.CSharp.Runtime.Values\Baila.CSharp.Runtime.Values.csproj", "{CF81DEF2-3B1F-4E4D-A90E-93F25EB7800B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{3830C890-E667-46EC-9EC3-F8A313CBEE0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3830C890-E667-46EC-9EC3-F8A313CBEE0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3830C890-E667-46EC-9EC3-F8A313CBEE0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF81DEF2-3B1F-4E4D-A90E-93F25EB7800B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF81DEF2-3B1F-4E4D-A90E-93F25EB7800B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF81DEF2-3B1F-4E4D-A90E-93F25EB7800B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF81DEF2-3B1F-4E4D-A90E-93F25EB7800B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

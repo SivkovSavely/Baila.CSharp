@@ -1,6 +1,6 @@
 ﻿using Baila.CSharp.Typing;
 
-namespace Baila.CSharp.Ast.Values;
+namespace Baila.CSharp.Runtime.Values;
 
 public interface IValue
 {

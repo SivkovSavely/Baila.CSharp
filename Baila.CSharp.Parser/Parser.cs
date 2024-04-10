@@ -68,8 +68,11 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Const))
         {
-            // TODO constant declaration
-            throw new NotImplementedException();
+            var name = Consume(TokenType.Identifier).Value!;
+            Consume(TokenType.Eq);
+            var value = Expression();
+
+            stmt = new ConstantDefineStatement(name, value);
         }
         else if (Match(TokenType.Function))
         {

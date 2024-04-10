@@ -15,6 +15,8 @@ public static class StatementInterpreterFactory
             IfElseStatement => new IfElseStatementInterpreter(),
             NoOpStatement => new NoOpStatementInterpreter(),
             WhileStatement => new WhileStatementInterpreter(),
+            VariableDefineStatement => new VariableDefineStatementInterpreter(),
+            ConstantDefineStatement => new ConstantDefineStatementInterpreter(),
             _ => throw new InvalidOperationException(
                 $"Statement is of invalid type: {statement.GetType().FullName}")
         };

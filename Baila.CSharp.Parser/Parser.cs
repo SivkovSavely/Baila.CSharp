@@ -30,7 +30,7 @@ public class Parser(List<Token> tokens)
             return new NoOpStatement();
         }
 
-        IStatement stmt;
+        IStatement stmt = null!;
 
         if (Match(TokenType.If))
         {
@@ -101,8 +101,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            // TODO stmt = expression statement
-            throw new NotImplementedException();
+            stmt = new ExpressionStatement(Expression());
         }
         
         // TODO require end of line or semicolon at the end of the statement
@@ -182,7 +181,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            stepValue = new ValueExpression(new IntValue(1));            
+            stepValue = new IntValueExpression(1);            
         }
 
         if (optionalLeftParen)
@@ -521,22 +520,22 @@ public class Parser(List<Token> tokens)
             result = suffix switch
             {
                 'c' => throw new NotImplementedException("Char number literals are not implemented yet"),
-                _ => new ValueExpression(new IntValue(int.Parse(number)))
+                _ => new IntValueExpression(int.Parse(number))
             };
         }
         // Strings
         else if (Match(TokenType.StringLiteral))
         {
-            result = new ValueExpression(new StringValue(current.Value!));
+            result = new StringValueExpression(current.Value!);
         }
         // true and false
         else if (Match(TokenType.True))
         {
-            result = new ValueExpression(new BooleanValue(true));
+            result = new BoolValueExpression(true);
         }
         else if (Match(TokenType.False))
         {
-            result = new ValueExpression(new BooleanValue(false));
+            result = new BoolValueExpression(false);
         }
         // Variables and constants
         else if (Match(TokenType.Identifier))
@@ -547,6 +546,25 @@ public class Parser(List<Token> tokens)
         if (result == null)
         {
             throw new Exception($"Syntax error: unexpected {current}");
+        }
+
+        if (LookMatch(0, TokenType.LeftParen)) // TODO do this in the infinite loop, alongside LeftBracket and Dot
+        {
+            var args = new List<IExpression>();
+            Consume(TokenType.LeftParen);
+
+            while (!Match(TokenType.EndOfFile) && !Match(TokenType.RightParen))
+            {
+                args.Add(Expression());
+                if (Match(TokenType.RightParen))
+                {
+                    break;
+                }
+
+                Consume(TokenType.Comma);
+            }
+
+            result = new FunctionCallExpression(result, args);
         }
         
         // TODO [array access], (function call) and object.dot.access

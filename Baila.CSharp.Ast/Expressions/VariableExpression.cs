@@ -2,13 +2,15 @@
 
 public class VariableExpression(string name) : IExpression
 {
+    public string Name { get; } = name;
+
     public string Stringify()
     {
-        return name;
+        return Name;
     }
 
     public override string ToString()
     {
-        return $"VariableExpression({name})";
+        return $"VariableExpression({Name})";
     }
 }

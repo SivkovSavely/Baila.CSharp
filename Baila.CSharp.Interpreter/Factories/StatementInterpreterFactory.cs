@@ -17,6 +17,7 @@ public static class StatementInterpreterFactory
             WhileStatement => new WhileStatementInterpreter(),
             VariableDefineStatement => new VariableDefineStatementInterpreter(),
             ConstantDefineStatement => new ConstantDefineStatementInterpreter(),
+            ExpressionStatement => new ExpressionStatementInterpreter(),
             _ => throw new InvalidOperationException(
                 $"Statement is of invalid type: {statement.GetType().FullName}")
         };

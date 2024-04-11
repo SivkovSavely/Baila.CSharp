@@ -6,22 +6,37 @@ Console.WriteLine("Hello from Baila");
 
 while (true)
 {
-    Console.Write("> ");
-    var source = Console.ReadLine() ?? "";
-    var lexer = new Lexer(source, "<REPL>");
-    var tokens = lexer.Tokenize();
-
-    Console.WriteLine("TOKENS:");
-    foreach (var token in tokens)
+    try
     {
-        Console.WriteLine(token);
+        Console.Write("> ");
+        var source = Console.ReadLine() ?? "";
+        var lexer = new Lexer(source, "<REPL>");
+        var tokens = lexer.Tokenize();
+
+        Console.WriteLine("TOKENS:");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        foreach (var token in tokens)
+        {
+            Console.WriteLine(token);
+        }
+        Console.ResetColor();
+
+        var parser = new Parser(tokens);
+        var ast = parser.BuildAst();
+        Console.WriteLine("PROGRAM AST:");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine(ast);
+        Console.ResetColor();
+
+        Console.WriteLine("PROGRAM RUNNING:");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        ast.InterpretExecute();
+        Console.ResetColor();
     }
-
-    var parser = new Parser(tokens);
-    var ast = parser.BuildAst();
-    Console.WriteLine("PROGRAM AST:");
-    Console.WriteLine(ast);
-
-    Console.WriteLine("PROGRAM RUNNING:");
-    ast.InterpretExecute();
+    catch (Exception e)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(e);
+        Console.ResetColor();
+    }
 }

@@ -1,4 +1,6 @@
-﻿using Baila.CSharp.Runtime.Values;
+﻿using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Runtime.Values;
+using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Interpreter.Stdlib;
@@ -89,6 +91,14 @@ public class NameTable
     static NameTable()
     {
         CurrentScope.AddVariableInferred("test", new IntValue(123));
+        CurrentScope.AddVariableInferred("print", FunctionValue.WithOverload(
+            overload: new FunctionOverload(
+                args => { Console.WriteLine(args.GetString(0)); },
+                [
+                    new FunctionParameter("s", BailaType.String)
+                ],
+                null),
+            name: "print"));
     }
 
     public static Member Get(string name)
@@ -120,12 +130,12 @@ public class NameTable
     public static void Set(string name, IValue value)
     {
         var scope = FindScope(name);
-        if (scope is {IsFound:true, Scope:not null})
+        if (scope is { IsFound: true, Scope: not null })
         {
             scope.Scope.SetVariable(name, value);
             return;
         }
-        
+
         throw new Exception($"ReferenceError: '{name}' is not defined");
     }
 

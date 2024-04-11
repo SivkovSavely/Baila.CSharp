@@ -12,8 +12,11 @@ public static class ExpressionInterpreterFactory
             AssignmentExpression => new AssignmentExpressionInterpreter(),
             BinaryExpression => new BinaryExpressionInterpreter(),
             PrefixUnaryExpression => new PrefixUnaryExpressionInterpreter(),
-            ValueExpression => new ValueExpressionInterpreter(),
             VariableExpression => new VariableExpressionInterpreter(),
+            FunctionCallExpression => new FunctionCallExpressionInterpreter(),
+            IntValueExpression => new IntValueExpressionInterpreter(),
+            StringValueExpression => new StringValueExpressionInterpreter(),
+            BoolValueExpression => new BoolValueExpressionInterpreter(),
             _ => throw new InvalidOperationException(
                 $"Expression is of invalid type: {expression.GetType().FullName}")
         };

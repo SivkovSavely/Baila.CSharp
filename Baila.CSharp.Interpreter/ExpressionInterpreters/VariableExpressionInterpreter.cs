@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Ast.Expressions;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 
@@ -8,6 +9,8 @@ public class VariableExpressionInterpreter : ExpressionInterpreterBase<VariableE
 {
     public override IValue Interpret(VariableExpression expression)
     {
-        throw new NotImplementedException();
+        var name = expression.Name;
+        var member = NameTable.Get(name);
+        return member.Value;
     }
 }

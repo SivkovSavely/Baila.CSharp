@@ -45,7 +45,9 @@ public static class StatementExtensions
 {
     public static void InterpretExecute(this IStatement expression)
     {
+        Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine($"[DEBUG] Exec {expression.GetType().Name} {expression}");
+        Console.ResetColor();
         StatementInterpreter.Interpret(expression);
     }
 }

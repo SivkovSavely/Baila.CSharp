@@ -49,7 +49,9 @@ public static class ExpressionExtensions
 {
     public static IValue InterpretEvaluate(this IExpression expression)
     {
+        Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine($"[DEBUG] Eval {expression.GetType().Name} {expression.Stringify()}");
+        Console.ResetColor();
         return ExpressionInterpreter.Interpret(expression);
     }
 }

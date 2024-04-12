@@ -29,9 +29,7 @@ while (true)
         Console.ResetColor();
 
         Console.WriteLine("PROGRAM RUNNING:");
-        Console.ForegroundColor = ConsoleColor.DarkGray;
         ast.InterpretExecute();
-        Console.ResetColor();
     }
     catch (Exception e)
     {

@@ -4,8 +4,6 @@ public record Token(Cursor Cursor, TokenType Type, string? Value = null)
 {
     public override string ToString()
     {
-        return string.IsNullOrEmpty(Value)
-            ? $"Token {{ Type = {Type.Type} }}"
-            : $"Token {{ Type = {Type.Type}, Value = {Value} }}";
+        return Type == TokenType.Identifier ? Value! : Type.ToString();
     }
 }

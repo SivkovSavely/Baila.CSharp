@@ -91,13 +91,21 @@ public class NameTable
     static NameTable()
     {
         CurrentScope.AddVariableInferred("test", new IntValue(123));
-        CurrentScope.AddVariableInferred("print", FunctionValue.WithOverload(
-            overload: new FunctionOverload(
-                args => { Console.WriteLine(args.GetString(0)); },
-                [
-                    new FunctionParameter("s", BailaType.String)
-                ],
-                null),
+        CurrentScope.AddVariableInferred("print", FunctionValue.WithOverloads(
+            overloads: [
+                new FunctionOverload(
+                    args => { Console.WriteLine(args.GetString(0)); },
+                    [
+                        new FunctionParameter("s", BailaType.String)
+                    ],
+                    null),
+                new FunctionOverload(
+                    args => { Console.WriteLine(args.GetInteger(0)); },
+                    [
+                        new FunctionParameter("i", BailaType.Int)
+                    ],
+                    null),
+            ],
             name: "print"));
     }
 

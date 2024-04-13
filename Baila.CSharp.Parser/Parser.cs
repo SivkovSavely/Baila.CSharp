@@ -178,9 +178,21 @@ public class Parser(List<Token> tokens)
 
         var body = StatementBlock(); // todo support '=>'
 
-        if (returnType == null)
+        if (shouldTraverseBody)
         {
-            throw new NotImplementedException("Inferring the return type is not supported yet");
+            var returnStatements = ReturnStatementSearchingStatementTraverser.Search(body);
+            if (returnStatements.Count == 0)
+            {
+                returnType = null; // void
+            }
+            else if (returnStatements.Count == 1)
+            {
+                returnType = returnStatements.First().ReturnExpression?.GetBailaType(); // type of return if it has an expression or void if return doesn't have an expression
+            }
+            else
+            {
+                throw new NotImplementedException("Inferring the return type of multiple return statements is not implemented yet");
+            }
         }
 
         return new FunctionDefineStatement(

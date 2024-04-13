@@ -33,7 +33,7 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         for (var i = 0; i < overload.Parameters.Count; i++)
         {
             var parameter = overload.Parameters[i];
-            args.AddArgument(parameter.name, arguments[i].InterpretEvaluate());
+            args.AddArgument(parameter.Name, arguments[i].InterpretEvaluate());
         }
 
         var callResult = overload.Callback.Call(args);
@@ -51,7 +51,7 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         foreach (var overload in Overloads)
         {
             // If we passed fewer arguments than the required parameters count, skip that overload
-            if (argTypes.Length < overload.Parameters.Count(par => par.defaultValue == null))
+            if (argTypes.Length < overload.Parameters.Count(par => par.DefaultValue == null))
             {
                 continue;
             }
@@ -63,7 +63,7 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
             }
             
             // Best match
-            if (argTypes.SequenceEqual(overload.Parameters.Select(par => par.type)))
+            if (argTypes.SequenceEqual(overload.Parameters.Select(par => par.Type)))
             {
                 found.Add(overload);
                 break;

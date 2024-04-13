@@ -76,8 +76,7 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Function))
         {
-            // TODO function declaration
-            throw new NotImplementedException();
+            stmt = FunctionDefinition();
         }
         else if (Match(TokenType.Return))
         {
@@ -113,6 +112,64 @@ public class Parser(List<Token> tokens)
         }
 
         return stmt;
+    }
+
+    private FunctionDefineStatement FunctionDefinition()
+    {
+        var name = Consume(TokenType.Identifier).Value!;
+        var parameters = new List<FunctionDefineStatement.FunctionParameter>();
+        BailaType? returnType = null;
+
+        if (Match(TokenType.LeftParen))
+        {
+            // TODO varargs
+            while (!Match(TokenType.RightParen))
+            {
+                var paramName = Consume(TokenType.Identifier).Value!;
+                Consume(TokenType.Colon);
+                var paramType = Type();
+                IExpression? defaultValue = null;
+                if (Match(TokenType.Eq))
+                {
+                    defaultValue = Expression();
+                }
+
+                parameters.Add(
+                    new FunctionDefineStatement.FunctionParameter(
+                        paramName, paramType, defaultValue, false));
+
+                if (Match(TokenType.RightParen)) break;
+
+                Consume(TokenType.Comma);
+            }
+        }
+
+        var shouldTraverseBody = false;
+        SkipOptionalNewline();
+        if (Match(TokenType.Colon)) {
+            // TODO redo to catch fully optional expression
+            SkipOptionalNewline();
+            returnType = Type();
+        } else {
+            // Return type is not specified, try to parse the return type from the body
+            // If there are no return statements then the function is void.
+            // ExprStmt are not allowed, we don't want func f: Number { g() } to return g()'s result.
+
+            shouldTraverseBody = true;
+
+            // TODO traverse function statements and retrieve all return statements, if any
+        }
+        SkipOptionalNewline();
+
+        var body = StatementBlock(); // todo support '=>'
+
+        if (returnType == null)
+        {
+            throw new NotImplementedException("Inferring the return type is not supported yet");
+        }
+
+        return new FunctionDefineStatement(
+            name, parameters, body, returnType);
     }
 
     private BailaType Type()
@@ -587,6 +644,11 @@ public class Parser(List<Token> tokens)
     private Token Get(int relative = 0)
     {
         return GetAbsolute(_position + relative);
+    }
+
+    private void SkipOptionalNewline()
+    {
+        Match(TokenType.EndOfLine);
     }
 
     private Token GetAbsolute(int absolute)

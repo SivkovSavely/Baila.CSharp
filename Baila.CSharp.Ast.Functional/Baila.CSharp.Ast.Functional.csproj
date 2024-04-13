@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Baila.CSharp.Ast\Baila.CSharp.Ast.csproj" />
+      <ProjectReference Include="..\Baila.CSharp.Lexer\Baila.CSharp.Lexer.csproj" />
       <ProjectReference Include="..\Baila.CSharp.Runtime.Values.Abstractions\Baila.CSharp.Runtime.Values.Abstractions.csproj" />
     </ItemGroup>
 

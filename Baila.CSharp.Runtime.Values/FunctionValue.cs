@@ -16,6 +16,16 @@ public class FunctionValue(string name = "") : IValue
         value._overloads.Add(overload);
         return value;
     }
+
+    public static FunctionValue WithOverloads(List<FunctionOverload> overloads, string name = "")
+    {
+        var value = new FunctionValue(name);
+        foreach (var overload in overloads)
+        {
+            value._overloads.Add(overload);
+        }
+        return value;
+    }
     
     public long GetAsInteger()
     {

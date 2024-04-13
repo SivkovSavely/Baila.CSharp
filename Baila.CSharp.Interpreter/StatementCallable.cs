@@ -1,5 +1,6 @@
 ﻿using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Statements;
+using Baila.CSharp.Interpreter.ControlFlowExceptions;
 using Baila.CSharp.Interpreter.StatementInterpreters;
 using Baila.CSharp.Runtime.Values.Abstractions;
 
@@ -11,7 +12,14 @@ public class StatementCallable(IStatement statement) : IBailaCallable
 
     public IValue? Call(BailaCallableArgs args)
     {
-        Statement.InterpretExecute();
+        try
+        {
+            Statement.InterpretExecute();
+        }
+        catch (ControlFlowReturnException returnException)
+        {
+            return returnException.Value;
+        }
 
         return null; // TODO return something on ReturnStatement
     }

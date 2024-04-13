@@ -80,8 +80,14 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Return))
         {
-            // TODO return statement
-            throw new NotImplementedException();
+            if (LookMatch(0, TokenType.EndOfFile) || LookMatch(0, TokenType.Semicolon) || LookMatch(0, TokenType.EndOfLine) || LookMatch(0, TokenType.RightCurly))
+            {
+                stmt = new ReturnStatement();
+            }
+            else
+            {
+                stmt = new ReturnStatement(Expression());
+            }
         }
         else if (Match(TokenType.Break))
         {
@@ -105,7 +111,8 @@ public class Parser(List<Token> tokens)
 
         if (!LookMatch(0, TokenType.EndOfLine) &&
             !LookMatch(0, TokenType.Semicolon) &&
-            !LookMatch(0, TokenType.EndOfFile))
+            !LookMatch(0, TokenType.EndOfFile) &&
+            !LookMatch(0, TokenType.RightCurly))
         {
             throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
         }

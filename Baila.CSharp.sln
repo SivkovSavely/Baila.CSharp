@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Values
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Functional", "Baila.CSharp.Runtime.Functional\Baila.CSharp.Runtime.Functional.csproj", "{0ED0D2B4-4EE4-4795-84BB-E4EA8A083B95}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Tests", "Baila.CSharp.Runtime.Tests\Baila.CSharp.Runtime.Tests.csproj", "{179E21DC-71A5-4945-B092-D926E5B2204A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,5 +86,9 @@ Global
 		{0ED0D2B4-4EE4-4795-84BB-E4EA8A083B95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0ED0D2B4-4EE4-4795-84BB-E4EA8A083B95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0ED0D2B4-4EE4-4795-84BB-E4EA8A083B95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{179E21DC-71A5-4945-B092-D926E5B2204A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{179E21DC-71A5-4945-B092-D926E5B2204A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{179E21DC-71A5-4945-B092-D926E5B2204A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{179E21DC-71A5-4945-B092-D926E5B2204A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

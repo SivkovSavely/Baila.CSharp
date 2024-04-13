@@ -1,4 +1,6 @@
-﻿namespace Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Expressions;
 
 public interface IExpression
 {
@@ -8,4 +10,9 @@ public interface IExpression
     /// </summary>
     /// <returns>Stringified expression</returns>
     string Stringify();
+
+    /// <summary>
+    /// Returns the Baila type that is the result of the expression evaluation.
+    /// </summary>
+    BailaType? GetBailaType() => null;
 }

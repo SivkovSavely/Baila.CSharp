@@ -102,9 +102,17 @@ public class Parser(List<Token> tokens)
         {
             stmt = new ExpressionStatement(Expression());
         }
-        
-        // TODO require end of line or semicolon at the end of the statement
-        // TODO skip end of line or semicolon token
+
+        if (!LookMatch(0, TokenType.EndOfLine) &&
+            !LookMatch(0, TokenType.Semicolon) &&
+            !LookMatch(0, TokenType.EndOfFile))
+        {
+            throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
+        }
+
+        if (LookMatch(0, TokenType.EndOfLine)) Consume(TokenType.EndOfLine);
+        else if (LookMatch(0, TokenType.Semicolon)) Consume(TokenType.Semicolon);
+        else if (LookMatch(0, TokenType.EndOfFile)) Consume(TokenType.EndOfFile);
 
         if (stmt == null)
         {

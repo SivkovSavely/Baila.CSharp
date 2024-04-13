@@ -107,6 +107,32 @@ public class NameTable
                     null),
             ],
             name: "print"));
+        CurrentScope.AddVariableInferred("sum", FunctionValue.WithOverloads(
+            overloads:
+            [
+                new FunctionOverload(
+                    args => new IntValue(args.GetInteger(0)),
+                    [
+                        new FunctionParameter("x1", BailaType.Int)
+                    ],
+                    null),
+                new FunctionOverload(
+                    args => new IntValue(args.GetInteger(0) + args.GetInteger(1)),
+                    [
+                        new FunctionParameter("x1", BailaType.Int),
+                        new FunctionParameter("x2", BailaType.Int)
+                    ],
+                    null),
+                new FunctionOverload(
+                    args => new IntValue(args.GetInteger(0) + args.GetInteger(1) + args.GetInteger(2)),
+                    [
+                        new FunctionParameter("x1", BailaType.Int),
+                        new FunctionParameter("x2", BailaType.Int),
+                        new FunctionParameter("x3", BailaType.Int)
+                    ],
+                    null),
+            ],
+            name: "sum"));
     }
 
     public static Member Get(string name)

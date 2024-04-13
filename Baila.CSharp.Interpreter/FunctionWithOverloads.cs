@@ -13,11 +13,23 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
     public IValue? Call(List<IExpression> arguments)
     {
         NameTable.PushScope();
+        
+        var args = new BailaCallableArgs();
+        for (var i = 0; i < arguments.Count; i++)
+        {
+            args.AddArgument($"par{i}", arguments[i].InterpretEvaluate());
+        }
 
-        var overload = Overloads.First();
+        var overloads = GetOverloads(args);
+        if (!overloads.Any())
+        {
+            var argTypes = args.ArgsByIndex.Select(x => x.GetBailaType()).ToArray();
+            throw new Exception($"Unable to find function overload: {string.Join(", ", argTypes.Select(x => x.ToString()))}");
+        }
+        var overload = overloads.First();
         
         // Load function arguments into the current scope
-        var args = new BailaCallableArgs();
+        args = new BailaCallableArgs();
         for (var i = 0; i < overload.Parameters.Count; i++)
         {
             var parameter = overload.Parameters[i];
@@ -29,5 +41,35 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         NameTable.PopScope();
 
         return callResult;
+    }
+
+    private List<FunctionOverload> GetOverloads(BailaCallableArgs args)
+    {
+        var argTypes = args.ArgsByIndex.Select(x => x.GetBailaType()).ToArray();
+        var found = new List<FunctionOverload>();
+
+        foreach (var overload in Overloads)
+        {
+            // If we passed fewer arguments than the required parameters count, skip that overload
+            if (argTypes.Length < overload.Parameters.Count(par => par.defaultValue == null))
+            {
+                continue;
+            }
+
+            // If we passed more arguments than the total parameters count, skip that overload
+            if (argTypes.Length > overload.Parameters.Count)
+            {
+                continue;
+            }
+            
+            // Best match
+            if (argTypes.SequenceEqual(overload.Parameters.Select(par => par.type)))
+            {
+                found.Add(overload);
+                break;
+            }
+        }
+
+        return found;
     }
 }

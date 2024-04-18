@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Functi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Runtime.Tests", "Baila.CSharp.Runtime.Tests\Baila.CSharp.Runtime.Tests.csproj", "{179E21DC-71A5-4945-B092-D926E5B2204A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.Tools.SyntaxHighlighter", "Baila.Tools.SyntaxHighlighter\Baila.Tools.SyntaxHighlighter.csproj", "{29E89F0E-0470-4204-B157-52C662D28CD4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,5 +92,9 @@ Global
 		{179E21DC-71A5-4945-B092-D926E5B2204A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{179E21DC-71A5-4945-B092-D926E5B2204A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{179E21DC-71A5-4945-B092-D926E5B2204A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E89F0E-0470-4204-B157-52C662D28CD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E89F0E-0470-4204-B157-52C662D28CD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E89F0E-0470-4204-B157-52C662D28CD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E89F0E-0470-4204-B157-52C662D28CD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

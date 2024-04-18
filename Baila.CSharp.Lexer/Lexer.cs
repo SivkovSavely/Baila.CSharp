@@ -273,23 +273,37 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                 Next();
                 TokenizeComment();
             }
-            else if (parenthesisParity == 0 && bracketParity == 0 && currentChar == '\n')
+            else if (currentChar == '\n')
             {
-                Next();
-                if (_tokens.Count > 0 && mode == LexerMode.Regular)
+                if (parenthesisParity == 0 && bracketParity == 0)
                 {
-                    var lastToken = _tokens.Last();
-                    if (lastToken.Type != TokenType.LeftParen
-                        && lastToken.Type != TokenType.LeftBracket
-                        && lastToken.Type != TokenType.LeftCurly)
+                    Next();
+                    if (_tokens.Count > 0 && mode != LexerMode.InterpolatedString)
                     {
-                        AddToken(TokenType.EndOfLine, "EOL");
+                        var lastToken = _tokens.Last();
+                        if (lastToken.Type != TokenType.LeftParen
+                            && lastToken.Type != TokenType.LeftBracket
+                            && lastToken.Type != TokenType.LeftCurly)
+                        {
+                            AddToken(TokenType.EndOfLine, "EOL");
+                        }
                     }
+                } else if (mode == LexerMode.Highlighting)
+                {
+                    AddToken(TokenType.Whitespace, currentChar.ToString());
+                    Next();
                 }
             }
             else
             {
                 // Whitespace
+                var ch = Current();
+                
+                if (mode == LexerMode.Highlighting)
+                {
+                    AddToken(TokenType.Whitespace, ch.ToString());
+                }
+                
                 Next();
                 continue;
             }
@@ -816,20 +830,45 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
     private void TokenizeComment()
     {
         var ch = Current();
+
+        StringBuilder? buffer = null;
+        if (mode == LexerMode.Highlighting) buffer = new StringBuilder();
+        
         while (HasChars())
         {
             if (ch == '\n') break;
+            buffer?.Append(ch);
             ch = Next();
+        }
+
+        if (mode == LexerMode.Highlighting)
+        {
+            AddToken(TokenType.SingleLineComment, buffer!.ToString());
         }
     }
 
     private void TokenizeMultilineComment()
     {
         var ch = Current();
+
+        StringBuilder? buffer = null;
+        if (mode == LexerMode.Highlighting) buffer = new StringBuilder();
+
         while (HasChars())
         {
-            if (ch == '*' && Peek(1) == '/') break;
+            if (ch == '*' && Peek(1) == '/')
+            {
+                Next(); // skip *
+                Next(); // skip /
+                break;
+            }
+            buffer?.Append(ch);
             ch = Next();
+        }
+
+        if (mode == LexerMode.Highlighting)
+        {
+            AddToken(TokenType.MultiLineComment, buffer!.ToString());
         }
     }
 

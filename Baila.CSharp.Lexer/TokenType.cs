@@ -1,14 +1,27 @@
 ﻿namespace Baila.CSharp.Lexer;
 
-public record TokenType(string Type)
+public record TokenType(string Type, bool HasMeaningfulValue = false)
 {
     public static readonly TokenType EndOfFile = new("EOF");
     public static readonly TokenType EndOfLine = new("EOL");
 
-    public static readonly TokenType Identifier = new("IDENTIFIER");
-    public static readonly TokenType StringLiteral = new("STRING");
-    public static readonly TokenType NumberLiteral = new("NUMBER");
-    public static readonly TokenType RegexLiteral = new("REGEX");
+    /// <summary>
+    /// Only used in LexerMode.Highlighting
+    /// </summary>
+    public static readonly TokenType Whitespace = new("WHITESPACE", HasMeaningfulValue: true);
+    /// <summary>
+    /// Only used in LexerMode.Highlighting
+    /// </summary>
+    public static readonly TokenType SingleLineComment = new("SINGLE_LINE_COMMENT", HasMeaningfulValue: true);
+    /// <summary>
+    /// Only used in LexerMode.Highlighting
+    /// </summary>
+    public static readonly TokenType MultiLineComment = new("MULTI_LINE_COMMENT", HasMeaningfulValue: true);
+
+    public static readonly TokenType Identifier = new("IDENTIFIER", HasMeaningfulValue: true);
+    public static readonly TokenType StringLiteral = new("STRING", HasMeaningfulValue: true);
+    public static readonly TokenType NumberLiteral = new("NUMBER", HasMeaningfulValue: true);
+    public static readonly TokenType RegexLiteral = new("REGEX", HasMeaningfulValue: true);
 
     // operators
     public static readonly TokenType Plus = new("+");

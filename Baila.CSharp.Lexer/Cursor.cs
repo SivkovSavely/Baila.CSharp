@@ -9,10 +9,15 @@ public class Cursor(int position, int column, int line, string filename) : IClon
 
     public Cursor Clone()
     {
-        return new Cursor(position, column, line, filename);
+        return new Cursor(Position, Column, Line, Filename);
     }
     object ICloneable.Clone()
     {
         return Clone();
+    }
+
+    public override string ToString()
+    {
+        return $"{Path.GetFileName(Filename)}:{Line}:{Column}";
     }
 }

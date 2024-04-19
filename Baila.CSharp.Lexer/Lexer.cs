@@ -195,13 +195,13 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
             else if (currentChar == '\'')
             {
                 Next();
-                TokenizeSingleString();
+                TokenizeSingleOrDoubleString('\'');
                 state = LexerState.Operator;
             }
             else if (currentChar == '"')
             {
                 Next();
-                TokenizeDoubleString();
+                TokenizeSingleOrDoubleString('"');
                 state = LexerState.Operator;
             }
             else if (currentChar == '`')
@@ -288,7 +288,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                             AddToken(TokenType.EndOfLine, "EOL");
                         }
                     }
-                } else if (mode == LexerMode.Highlighting)
+                } else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
                 {
                     AddToken(TokenType.Whitespace, currentChar.ToString());
                     Next();
@@ -299,7 +299,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                 // Whitespace
                 var ch = Current();
                 
-                if (mode == LexerMode.Highlighting)
+                if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
                 {
                     AddToken(TokenType.Whitespace, ch.ToString());
                 }
@@ -382,7 +382,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                 }
                 else if (_buffer.ToString().Contains('.') && IsDigit(Peek(1)))
                 {
-                    throw new Exception("Syntax error: encountered second decimal point in a number literal");
+                    throw new Exception($"Syntax error: encountered second decimal point in a number literal in {_cursor.Line}:{_cursor.Column}");
                 }
                 else if (!IsDigit(Peek(1)))
                 {
@@ -462,7 +462,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
         AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 16).ToString());
     }
 
-    private void TokenizeSingleString()
+    private void TokenizeSingleOrDoubleString(char quoteChar)
     {
         _buffer.Clear();
         var currentChar = Current();
@@ -486,7 +486,14 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                             interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
                         }
                         interpolatedStringTokens.Add(
-                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                            new Token(
+                                _cursor.Clone(),
+                                mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
+                                    ? quoteChar == '\''
+                                        ? TokenType.SingleQuoteStringLiteral
+                                        : TokenType.DoubleQuoteStringLiteral
+                                    : TokenType.StringLiteral,
+                                _buffer.ToString()));
                         _buffer.Clear();
                     }
 
@@ -498,12 +505,12 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                     {
                         if (_buffer.Length == 0)
                         {
-                            throw new Exception("Syntax error: empty interpolated string expression");
+                            throw new Exception($"Syntax error: empty interpolated string expression in {_cursor.Line}:{_cursor.Column}");
                         }
 
                         if (interpolatedStringTokens == null)
                         {
-                            throw new Exception("Syntax error: unexpected string expression closing brace");
+                            throw new Exception($"Syntax error: unexpected string expression closing brace in {_cursor.Line}:{_cursor.Column}");
                         }
 
                         if (interpolatedStringTokens.Count != 0)
@@ -511,7 +518,12 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                             interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
                         }
 
-                        var lexer = new Lexer(_buffer.ToString(), _cursor.Filename, LexerMode.InterpolatedString);
+                        var lexer = new Lexer(
+                            _buffer.ToString(),
+                            _cursor.Filename,
+                            mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
+                                ? LexerMode.HighlightingInterpolatedString
+                                : LexerMode.InterpolatedString);
                         var expressionTokens = lexer.Tokenize();
                         interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.LeftParen));
                         interpolatedStringTokens.AddRange(expressionTokens);
@@ -525,47 +537,50 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                     switch (currentChar)
                     {
                         case '$':
-                            _buffer.Append("\\$");
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\\$" : "\\$");
                             break;
-                        case '\'':
-                            _buffer.Append('\'');
+                        case '\'' when quoteChar == '\'':
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\'" : '\'');
+                            break;
+                        case '\"' when quoteChar == '\"':
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"""" : '"');
                             break;
                         case '\\':
-                            _buffer.Append('\\');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\\" : '\\');
                             break;
                         case 'n':
-                            _buffer.Append('\n');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\n" : '\n');
                             break;
                         case 'r':
-                            _buffer.Append('\r');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\r" : '\r');
                             break;
                         case 't':
-                            _buffer.Append('\t');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\t" : '\t');
                             break;
                         case 'b':
-                            _buffer.Append('\b');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\b" : '\b');
                             break;
                         case '0':
-                            _buffer.Append('\0');
+                            _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\0" : '\0');
                             break;
                         default:
-                            throw new Exception($"Unrecognized escape sequence: \\{currentChar}");
+                            throw new Exception($"Unrecognized escape sequence: \\{currentChar} in {_cursor.Line}:{_cursor.Column}");
                     }
 
                     currentChar = Next();
-                    break;
+                    continue;
             }
 
-            if (currentChar == '\'' && unclosedCurlies == 0)
+            if (currentChar == quoteChar && unclosedCurlies == 0)
                 break;
             if (currentChar == '\0')
-                throw new Exception("Unclosed string");
+                throw new Exception($"Unclosed string in {_cursor.Line}:{_cursor.Column}");
             _buffer.Append(currentChar);
             currentChar = Next();
         }
 
         if (unclosedCurlies != 0)
-            throw new Exception("Syntax error: Unbalanced curly brackets inside template string");
+            throw new Exception($"Syntax error: Unbalanced curly brackets inside template string in {_cursor.Line}:{_cursor.Column}");
 
         Next(); // Skip closing quote
 
@@ -578,7 +593,14 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
                     interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
                 }
                 interpolatedStringTokens.Add(
-                    new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                    new Token(
+                        _cursor.Clone(),
+                        mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
+                            ? quoteChar == '"'
+                                ? TokenType.DoubleQuoteStringLiteral
+                                : TokenType.SingleQuoteStringLiteral
+                            : TokenType.StringLiteral,
+                        _buffer.ToString()));
                 _buffer.Clear();
             }
             
@@ -587,174 +609,13 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
             _tokens.AddRange(interpolatedStringTokens!);
             AddToken(TokenType.RightParen);
         }
-        else
+        else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
         {
-            AddToken(TokenType.StringLiteral, _buffer.ToString());
-        }
-    }
-
-    private void TokenizeDoubleString()
-    {
-        _buffer.Clear();
-        var currentChar = Current();
-        var unclosedCurlies = 0;
-        var isInterpolated = false;
-        var isTokenizingSimpleIdentifierInterpolation = false;
-        List<Token>? interpolatedStringTokens = null;
-        while (HasChars())
-        {
-            if (isTokenizingSimpleIdentifierInterpolation)
-            {
-                if (!IsIdentifierContinuation(currentChar))
-                {
-                    isTokenizingSimpleIdentifierInterpolation = false;
-                    if (interpolatedStringTokens!.Count != 0)
-                    {
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
-                    }
-                    interpolatedStringTokens.Add(
-                        new Token(_cursor.Clone(), TokenType.Identifier, _buffer.ToString()));
-                    _buffer.Clear();
-                    continue;
-                }
-
-                _buffer.Append(currentChar);
-                currentChar = Next();
-                continue;
-            }
-
-            switch (currentChar)
-            {
-                case '$' when Peek(1) == '{':
-                    isInterpolated = true;
-                    Next(); // skip $
-                    currentChar = Next(); // skip {
-                    unclosedCurlies++;
-                    interpolatedStringTokens ??= [];
-                    if (_buffer.Length > 0)
-                    {
-                        if (interpolatedStringTokens.Count != 0)
-                        {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
-                        }
-                        interpolatedStringTokens.Add(
-                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
-                        _buffer.Clear();
-                    }
-
-                    continue;
-                case '$' when IsIdentifierStart(Peek(1)):
-                    isInterpolated = true;
-                    isTokenizingSimpleIdentifierInterpolation = true;
-                    currentChar = Next(); // skip $
-                    interpolatedStringTokens ??= [];
-                    if (_buffer.Length > 0)
-                    {
-                        if (interpolatedStringTokens.Count != 0)
-                        {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
-                        }
-                        interpolatedStringTokens.Add(
-                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
-                        _buffer.Clear();
-                    }
-
-                    continue;
-                case '}':
-                    currentChar = Next(); // skip }
-                    unclosedCurlies--;
-                    if (unclosedCurlies == 0)
-                    {
-                        if (_buffer.Length == 0)
-                        {
-                            throw new Exception("Syntax error: empty interpolated string expression");
-                        }
-
-                        if (interpolatedStringTokens == null)
-                        {
-                            throw new Exception("Syntax error: unexpected string expression closing brace");
-                        }
-
-                        if (interpolatedStringTokens.Count != 0)
-                        {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
-                        }
-
-                        var lexer = new Lexer(_buffer.ToString(), _cursor.Filename, LexerMode.InterpolatedString);
-                        var expressionTokens = lexer.Tokenize();
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.LeftParen));
-                        interpolatedStringTokens.AddRange(expressionTokens);
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.RightParen));
-                        _buffer.Clear();
-                    }
-
-                    continue;
-                case '\\':
-                    currentChar = Next();
-                    switch (currentChar)
-                    {
-                        case '$':
-                            _buffer.Append("\\$");
-                            break;
-                        case '\'':
-                            _buffer.Append('\'');
-                            break;
-                        case '\\':
-                            _buffer.Append('\\');
-                            break;
-                        case 'n':
-                            _buffer.Append('\n');
-                            break;
-                        case 'r':
-                            _buffer.Append('\r');
-                            break;
-                        case 't':
-                            _buffer.Append('\t');
-                            break;
-                        case 'b':
-                            _buffer.Append('\b');
-                            break;
-                        case '0':
-                            _buffer.Append('\0');
-                            break;
-                        default:
-                            throw new Exception($"Unrecognized escape sequence: \\{currentChar}");
-                    }
-
-                    currentChar = Next();
-                    break;
-            }
-
-            if (currentChar == '"' && unclosedCurlies == 0)
-                break;
-            if (currentChar == '\0')
-                throw new Exception("Unclosed string");
-            _buffer.Append(currentChar);
-            currentChar = Next();
-        }
-
-        if (unclosedCurlies != 0)
-            throw new Exception("Syntax error: Unbalanced curly brackets inside template string");
-
-        Next(); // Skip closing quote
-
-        if (isInterpolated)
-        {
-            if (_buffer.Length > 0)
-            {
-                if (interpolatedStringTokens!.Count != 0)
-                {
-                    interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
-                }
-                interpolatedStringTokens.Add(
-                    new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
-                _buffer.Clear();
-            }
-            
-            AddToken(TokenType.PrivateStringConcat);
-            AddToken(TokenType.LeftParen);
-            _tokens.AddRange(interpolatedStringTokens!);
-            AddToken(TokenType.RightParen);
+            AddToken(
+                quoteChar == '"'
+                    ? TokenType.DoubleQuoteStringLiteral
+                    : TokenType.SingleQuoteStringLiteral,
+                _buffer.ToString());
         }
         else
         {
@@ -768,16 +629,33 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
         var currentChar = Current();
         while (HasChars())
         {
+            switch (currentChar)
+            {
+                case '\\' when Peek(1) == '`':
+                    Next(); // skip \
+                    currentChar = Next(); // skip `
+                    _buffer.Append(@"\`");
+                    continue;
+            }
+            
             if (currentChar == '`')
                 break;
             if (currentChar == '\0')
-                throw new Exception("Unclosed string");
+                throw new Exception($"Unclosed string in {_cursor.Line}:{_cursor.Column}");
             _buffer.Append(currentChar);
             currentChar = Next();
         }
 
         Next(); // Skip closing quote
-        AddToken(TokenType.StringLiteral, _buffer.ToString());
+
+        if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
+        {
+            AddToken(TokenType.BacktickStringLiteral, _buffer.ToString());
+        }
+        else
+        {
+            AddToken(TokenType.StringLiteral, _buffer.ToString());
+        }
     }
 
     private void TokenizeOperator()
@@ -832,7 +710,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
         var ch = Current();
 
         StringBuilder? buffer = null;
-        if (mode == LexerMode.Highlighting) buffer = new StringBuilder();
+        if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString) buffer = new StringBuilder();
         
         while (HasChars())
         {
@@ -841,7 +719,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
             ch = Next();
         }
 
-        if (mode == LexerMode.Highlighting)
+        if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
         {
             AddToken(TokenType.SingleLineComment, buffer!.ToString());
         }
@@ -852,7 +730,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
         var ch = Current();
 
         StringBuilder? buffer = null;
-        if (mode == LexerMode.Highlighting) buffer = new StringBuilder();
+        if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString) buffer = new StringBuilder();
 
         while (HasChars())
         {
@@ -866,7 +744,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
             ch = Next();
         }
 
-        if (mode == LexerMode.Highlighting)
+        if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
         {
             AddToken(TokenType.MultiLineComment, buffer!.ToString());
         }
@@ -920,6 +798,7 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
     private char Next()
     {
         _cursor.Position++;
+        _cursor.Column++;
 
         if (Current() == '\n')
         {

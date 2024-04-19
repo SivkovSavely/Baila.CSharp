@@ -14,4 +14,8 @@ public enum LexerMode
     /// Lexer mode for the syntax highlighter. Includes whitespace and comments.
     /// </summary>
     Highlighting,
+    /// <summary>
+    /// Lexer mode for the insides of an interpolated string literal template for the syntax highlighter.
+    /// </summary>
+    HighlightingInterpolatedString,
 }

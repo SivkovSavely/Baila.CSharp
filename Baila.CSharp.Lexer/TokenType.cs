@@ -24,6 +24,10 @@ public record TokenType(
 
     public static readonly TokenType Identifier = new("IDENTIFIER", HasMeaningfulValue: true);
     public static readonly TokenType StringLiteral = new("STRING", HasMeaningfulValue: true);
+    public static readonly TokenType SingleQuoteStringLiteral = new("'STRING'", HasMeaningfulValue: true);
+    public static readonly TokenType DoubleQuoteStringLiteral = new("\"STRING\"", HasMeaningfulValue: true);
+    public static readonly TokenType BacktickStringLiteral = new("`STRING`", HasMeaningfulValue: true);
+    public static readonly TokenType StringLiteralEscapeSequence = new("ESCAPE_SEQUENCE", HasMeaningfulValue: true);
     public static readonly TokenType NumberLiteral = new("NUMBER", HasMeaningfulValue: true);
     public static readonly TokenType RegexLiteral = new("REGEX", HasMeaningfulValue: true);
 

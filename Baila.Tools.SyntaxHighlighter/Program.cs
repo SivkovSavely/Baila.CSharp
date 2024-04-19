@@ -24,7 +24,7 @@ return 0;
 
 void HighlightFile(string filePath)
 {
-    var source = File.ReadAllText(filePath);
+    var source = File.ReadAllText(filePath).Replace("\r\n", "\n");
     var lexer = new Lexer(source, filePath, LexerMode.Highlighting);
     var tokens = lexer.Tokenize();
 
@@ -97,9 +97,17 @@ void HighlightFile(string filePath)
         {
             AppendSpan("identifier", token.Value!);
         }
-        else if (token.Type == TokenType.StringLiteral)
+        else if (token.Type == TokenType.SingleQuoteStringLiteral)
+        {
+            AppendSpan("string", "'" + token.Value + "'");
+        }
+        else if (token.Type == TokenType.DoubleQuoteStringLiteral)
         {
             AppendSpan("string", "\"" + token.Value + "\"");
+        }
+        else if (token.Type == TokenType.BacktickStringLiteral)
+        {
+            AppendSpan("string", "`" + token.Value + "`");
         }
         else if (token.Type == TokenType.NumberLiteral)
         {
@@ -115,6 +123,8 @@ void HighlightFile(string filePath)
         }
         else if (token.Type == TokenType.PrivateStringConcat)
         {
+            bool? isSingleQuote = null;
+
             if (tokens[index + 1].Type != TokenType.LeftParen)
             {
                 throw new Exception("Token after [[string_concat]] should be '('");
@@ -122,13 +132,34 @@ void HighlightFile(string filePath)
 
             index++; // skip [[string_concat]]
             index++; // skip (
-            AppendSpan("string", "$\"");
+            
+            token = tokens[index];
+            if (token.Type == TokenType.SingleQuoteStringLiteral)
+            {
+                isSingleQuote = true;
+                AppendSpan("string", "'");
+            }
+            else if (token.Type == TokenType.DoubleQuoteStringLiteral)
+            {
+                isSingleQuote = false;
+                AppendSpan("string", "\"");
+            }
+            else
+            {
+                throw new Exception("isSingleQuote is null");
+            }
 
             do
             {
                 token = tokens[index];
 
-                if (token.Type == TokenType.StringLiteral)
+                if (token.Type == TokenType.SingleQuoteStringLiteral)
+                {
+                    AppendSpan("string", token.Value!);
+                    index++;
+                    token = tokens[index];
+                }
+                else if (token.Type == TokenType.DoubleQuoteStringLiteral)
                 {
                     AppendSpan("string", token.Value!);
                     index++;
@@ -141,7 +172,7 @@ void HighlightFile(string filePath)
                 } else if (token.Type == TokenType.LeftParen)
                 {
                     index++; // skip (
-                    AppendSpan("operator", "{");
+                    AppendSpan("operator", "${");
 
                     do
                     {
@@ -159,7 +190,18 @@ void HighlightFile(string filePath)
             } while (token.Type != TokenType.RightParen);
 
             // skipping ) is provided by the end of the for loop
-            AppendSpan("string", "\"");
+            if (isSingleQuote == true)
+            {
+                AppendSpan("string", "'");
+            }
+            else if (isSingleQuote == false)
+            {
+                AppendSpan("string", "\"");
+            }
+            else
+            {
+                throw new Exception("isSingleQuote is null");
+            }
             return;
         }
         else

@@ -1,8 +1,12 @@
-﻿namespace Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Expressions;
 
 public class IntValueExpression(int value) : IExpression
 {
     public int Value { get; } = value;
+
+    public BailaType GetBailaType() => BailaType.Int;
 
     public string Stringify()
     {

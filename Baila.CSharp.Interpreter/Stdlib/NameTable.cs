@@ -133,6 +133,17 @@ public class NameTable
                     null),
             ],
             name: "sum"));
+        CurrentScope.AddVariableInferred("type_of", FunctionValue.WithOverloads(
+            overloads:
+            [
+                new FunctionOverload(
+                    args => new StringValue(args.Get(0).GetBailaType().ToString()),
+                    [
+                        new FunctionParameter("x", BailaType.Any)
+                    ],
+                    null),
+            ],
+            name: "typeof"));
     }
 
     public static Member Get(string name)

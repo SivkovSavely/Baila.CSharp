@@ -16,6 +16,16 @@ public class BailaCallableArgs
         _argsByIndex.Add(value);
     }
 
+    public IValue Get(int argIndex)
+    {
+        return _argsByIndex[argIndex];
+    }
+
+    public IValue Get(string argName)
+    {
+        return _argsByName[argName];
+    }
+
     public string GetString(int argIndex)
     {
         return _argsByIndex[argIndex].GetAsString();

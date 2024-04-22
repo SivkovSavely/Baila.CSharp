@@ -1,6 +1,8 @@
-﻿namespace Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Typing;
 
-public class BinaryExpression(BinaryExpression.Operation operation, IExpression left, IExpression right) : IExpression
+namespace Baila.CSharp.Ast.Expressions;
+
+public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpression Left, IExpression Right) : IExpression
 {
     public readonly record struct Operation(string Op)
     {
@@ -30,13 +32,32 @@ public class BinaryExpression(BinaryExpression.Operation operation, IExpression 
         public override string ToString() => Op;
     }
 
+    public record Operator(Operation Operation, BailaType LeftType, BailaType RightType, BailaType ResultType)
+    {
+        public static readonly List<Operator> All = [];
+
+        public static readonly Operator IntIntAddition = Add(new Operator(Operation.Addition, BailaType.Int, BailaType.Int, BailaType.Int));
+
+        private static Operator Add(Operator op) { All.Add(op); return op; }
+    }
+
+    public BailaType? GetBailaType()
+    {
+        var op = Operator.All.FirstOrDefault(op =>
+            BinaryOperation == op.Operation &&
+            op.LeftType == Left.GetBailaType() &&
+            op.RightType == Right.GetBailaType());
+
+        return op?.ResultType;
+    }
+
     public string Stringify()
     {
-        return $"{left.Stringify()} {operation} {right.Stringify()}";
+        return $"{Left.Stringify()} {BinaryOperation} {Right.Stringify()}";
     }
 
     public override string ToString()
     {
-        return $"BinaryExpression({left} {operation} {right})";
+        return $"BinaryExpression({Left} {BinaryOperation} {Right})";
     }
 }

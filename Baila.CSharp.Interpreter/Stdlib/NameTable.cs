@@ -96,13 +96,7 @@ public class NameTable
                 new FunctionOverload(
                     args => { Console.WriteLine(args.GetString(0)); },
                     [
-                        new FunctionParameter("s", BailaType.String)
-                    ],
-                    null),
-                new FunctionOverload(
-                    args => { Console.WriteLine(args.GetInteger(0)); },
-                    [
-                        new FunctionParameter("i", BailaType.Int)
+                        new FunctionParameter("x", BailaType.Any)
                     ],
                     null),
             ],

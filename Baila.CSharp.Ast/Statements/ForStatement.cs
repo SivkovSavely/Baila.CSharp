@@ -16,11 +16,6 @@ public class ForStatement(
     public IExpression StepValue { get; } = stepValue;
     public IStatement Body { get; } = body;
 
-    public void Execute()
-    {
-        throw new NotImplementedException("For loop is not implemented yet");
-    }
-
     public override string ToString()
     {
         return $"ForStatement(" +

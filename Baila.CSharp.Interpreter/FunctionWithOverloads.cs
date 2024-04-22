@@ -3,6 +3,7 @@ using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter.ExpressionInterpreters;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Interpreter;
 
@@ -66,6 +67,13 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
             
             // Best match
             if (argTypes.SequenceEqual(overload.Parameters.Select(par => par.Type)))
+            {
+                found.Add(overload);
+                break;
+            }
+
+            // Match where any of the parameters in the function are Any
+            if (argTypes.Select((t,i) => (t,i)).All(e => overload.Parameters[e.i].Type == e.t || overload.Parameters[e.i].Type == BailaType.Any))
             {
                 found.Add(overload);
                 break;

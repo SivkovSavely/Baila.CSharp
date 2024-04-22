@@ -33,7 +33,9 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         for (var i = 0; i < overload.Parameters.Count; i++)
         {
             var parameter = overload.Parameters[i];
-            args.AddArgument(parameter.Name, arguments[i].InterpretEvaluate());
+            var value = arguments[i].InterpretEvaluate();
+            args.AddArgument(parameter.Name, value);
+            NameTable.AddVariable(parameter.Name, parameter.Type, value);
         }
 
         var callResult = overload.Callback.Call(args);

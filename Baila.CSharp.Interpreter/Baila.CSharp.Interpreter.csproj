@@ -11,5 +11,11 @@
       <ProjectReference Include="..\Baila.CSharp.Runtime.Values\Baila.CSharp.Runtime.Values.csproj" />
       <ProjectReference Include="..\Baila.CSharp.Typing\Baila.CSharp.Typing.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>Baila.CSharp.Interpreter.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 
 </Project>

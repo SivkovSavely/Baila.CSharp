@@ -86,7 +86,7 @@ public class NameTable
     //
     // public static NameTable Instance { get; private set; } = null!;
 
-    public static Scope CurrentScope = new();
+    public static Scope CurrentScope { get; internal set; } = new();
 
     static NameTable()
     {

@@ -13,6 +13,7 @@ while (true)
         var lexer = new Lexer(source, "<REPL>");
         var tokens = lexer.Tokenize();
 
+#if DEBUG
         Console.WriteLine("TOKENS:");
         Console.ForegroundColor = ConsoleColor.DarkGray;
         foreach (var token in tokens)
@@ -20,15 +21,19 @@ while (true)
             Console.WriteLine(token);
         }
         Console.ResetColor();
+#endif
 
         var parser = new Parser(tokens);
         var ast = parser.BuildAst();
+
+#if DEBUG
         Console.WriteLine("PROGRAM AST:");
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine(ast);
         Console.ResetColor();
 
         Console.WriteLine("PROGRAM RUNNING:");
+#endif
         ast.InterpretExecute();
     }
     catch (Exception e)

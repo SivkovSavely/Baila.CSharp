@@ -1,4 +1,6 @@
-﻿using Baila.CSharp.Ast.Expressions;
+﻿// #define PARSER_TRACE_ENABLED
+
+using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
@@ -25,31 +27,31 @@ public class Parser(List<Token> tokens)
 
     private IStatement Statement()
     {
-        if (Match(TokenType.EndOfLine) || Match(TokenType.Semicolon))
-        {
-            return new NoOpStatement();
-        }
-
         IStatement stmt = null!;
 
         if (Match(TokenType.If))
         {
+            Trace("IfElseStatement");
             stmt = IfElseStatement();
         }
         else if (Match(TokenType.For))
         {
+            Trace("ForStatement");
             stmt = ForStatement();
         }
         else if (Match(TokenType.While))
         {
+            Trace("WhileStatement");
             stmt = WhileStatement();
         }
         else if (Match(TokenType.Do))
         {
+            Trace("DoWhileStatement");
             stmt = DoWhileStatement();
         }
         else if (Match(TokenType.Var))
         {
+            Trace("VariableDefineStatement");
             var name = Consume(TokenType.Identifier).Value!;
             BailaType? type = null;
             IExpression? value = null;
@@ -68,6 +70,7 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Const))
         {
+            Trace("ConstantDefineStatement");
             var name = Consume(TokenType.Identifier).Value!;
             Consume(TokenType.Eq);
             var value = Expression();
@@ -76,10 +79,12 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Function))
         {
+            Trace("FunctionDefinition");
             stmt = FunctionDefinition();
         }
         else if (Match(TokenType.Return))
         {
+            Trace("ReturnStatement");
             if (LookMatch(0, TokenType.EndOfFile) || LookMatch(0, TokenType.Semicolon) || LookMatch(0, TokenType.EndOfLine) || LookMatch(0, TokenType.RightCurly))
             {
                 stmt = new ReturnStatement();
@@ -91,21 +96,25 @@ public class Parser(List<Token> tokens)
         }
         else if (Match(TokenType.Break))
         {
+            Trace("Break");
             // TODO break statement
             throw new NotImplementedException();
         }
         else if (Match(TokenType.Continue))
         {
+            Trace("Continue");
             // TODO continue statement
             throw new NotImplementedException();
         }
         else if (Match(TokenType.Class))
         {
+            Trace("Class");
             // TODO class declaration
             throw new NotImplementedException();
         }
         else
         {
+            Trace("ExpressionStatement");
             stmt = new ExpressionStatement(Expression());
         }
 
@@ -297,6 +306,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement StatementOrBlock()
     {
+        SkipConsecutive(TokenType.EndOfLine);
+
         if (LookMatch(0, TokenType.LeftCurly))
         {
             return StatementBlock();
@@ -344,6 +355,7 @@ public class Parser(List<Token> tokens)
 
     private IExpression Expression()
     {
+        Trace("Expression");
         return Assignment();
     }
 
@@ -579,12 +591,14 @@ public class Parser(List<Token> tokens)
 
     private IExpression Primary()
     {
+        Trace("Primary");
         var current = Get();
         IExpression? result = null;
 
         // (expr)
         if (Match(TokenType.LeftParen))
         {
+            Trace("LeftParen");
             var expression = Expression();
             Consume(TokenType.RightParen);
             result = expression;
@@ -592,6 +606,7 @@ public class Parser(List<Token> tokens)
         // [ listElem1, listElem2, ..., listElemN ]
         else if (Match(TokenType.LeftBracket))
         {
+            Trace("LeftBracket");
             var expressionList = new List<IExpression>();
 
             while (!Match(TokenType.RightBracket))
@@ -605,6 +620,7 @@ public class Parser(List<Token> tokens)
         // Numbers
         else if (Match(TokenType.NumberLiteral))
         {
+            Trace("NumberLiteral");
             var currentNum = current.Value!;
             var suffix = currentNum.Last();
             var number = suffix is 'c' ? currentNum[..^1] : currentNum;
@@ -618,20 +634,24 @@ public class Parser(List<Token> tokens)
         // Strings
         else if (Match(TokenType.StringLiteral))
         {
+            Trace("StringLiteral");
             result = new StringValueExpression(current.Value!);
         }
         // true and false
         else if (Match(TokenType.True))
         {
+            Trace("True");
             result = new BoolValueExpression(true);
         }
         else if (Match(TokenType.False))
         {
+            Trace("False");
             result = new BoolValueExpression(false);
         }
         // Variables and constants
         else if (Match(TokenType.Identifier))
         {
+            Trace("Identifier");
             result = new VariableExpression(current.Value!);
         }
 
@@ -642,6 +662,7 @@ public class Parser(List<Token> tokens)
 
         if (LookMatch(0, TokenType.LeftParen)) // TODO do this in the infinite loop, alongside LeftBracket and Dot
         {
+            Trace("LeftParen after");
             var args = new List<IExpression>();
             Consume(TokenType.LeftParen);
 
@@ -708,5 +729,12 @@ public class Parser(List<Token> tokens)
                 new Cursor(0, 0, 0, ""),
                 TokenType.EndOfFile);
         }
+    }
+
+    private void Trace(string message)
+    {
+#if PARSER_TRACE_ENABLED
+        Console.WriteLine($"Trace: {message}. Get(0) = {Get()} ({Get().Cursor})"); 
+#endif
     }
 }

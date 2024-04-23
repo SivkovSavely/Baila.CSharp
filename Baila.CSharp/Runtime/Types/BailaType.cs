@@ -9,6 +9,34 @@ public record BailaType(string ClassName, bool Nullable = false, List<BailaType>
     public static readonly BailaType String = new("String");
     public static readonly BailaType Function = new("Function");
 
+    public bool IsImplicitlyConvertibleTo(BailaType targetType)
+    {
+        if (targetType == Any)
+        {
+            // Anything is implicitly convertible to Any
+            return true;
+        }
+
+        if (targetType == this)
+        {
+            // The type is implicitly convertible to itself
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool IsExplicitlyConvertibleTo(BailaType targetType)
+    {
+        if (IsImplicitlyConvertibleTo(targetType))
+        {
+            // If something is implicitly convertible, then it's also explicitly convertible.
+            return true;
+        }
+
+        return false;
+    }
+
     public override string ToString()
     {
         return (Nullable ? "?" : "") +

@@ -9,7 +9,7 @@ using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Parser;
 
-public class Parser(List<Token> tokens)
+public class Parser(List<Token> tokens, CancellationToken? cancellationToken = null)
 {
     private int _position;
     private readonly int _length = tokens.Count;
@@ -30,6 +30,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement Statement(bool requireEndOfStatement = true)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         IStatement stmt = null!;
 
         if (Match(TokenType.If))
@@ -152,6 +154,8 @@ public class Parser(List<Token> tokens)
 
     private FunctionDefineStatement FunctionDefinition()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var name = Consume(TokenType.Identifier).Value!;
         var parameters = new List<FunctionParameter>();
         BailaType? returnType = null;
@@ -222,6 +226,8 @@ public class Parser(List<Token> tokens)
 
     private BailaType Type()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         // nullable check
         var isNullable = Match(TokenType.Question);
         
@@ -249,6 +255,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement IfElseStatement()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var condition = Expression();
         var trueStmt = StatementOrBlock(false);
 
@@ -271,6 +279,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement ForStatement()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var optionalLeftParen = Match(TokenType.LeftParen);
 
         var counterVariable = Consume(TokenType.Identifier).Value!;
@@ -310,6 +320,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement WhileStatement()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var condition = Expression();
         var body = StatementOrBlock();
 
@@ -318,6 +330,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement DoWhileStatement()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var body = StatementOrBlock();
         Consume(TokenType.While);
         var condition = Expression();
@@ -327,6 +341,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement StatementOrBlock(bool requireEndOfStatement = true)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         SkipConsecutive(TokenType.EndOfLine);
 
         if (LookMatch(0, TokenType.LeftCurly))
@@ -339,6 +355,8 @@ public class Parser(List<Token> tokens)
 
     private IStatement StatementBlock(bool requireEndOfStatement = true)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var block = new BlockStatement();
         Consume(TokenType.LeftCurly);
         while (!Match(TokenType.RightCurly))
@@ -351,6 +369,8 @@ public class Parser(List<Token> tokens)
 
     private Token Consume(TokenType tokenType)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var current = Get();
         if (current.Type != tokenType)
         {
@@ -363,6 +383,8 @@ public class Parser(List<Token> tokens)
 
     private void SkipConsecutive(TokenType tokenType)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         while (Get().Type == tokenType)
         {
             Consume(tokenType);
@@ -371,17 +393,23 @@ public class Parser(List<Token> tokens)
 
     private bool LookMatch(int relative, TokenType tokenType)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         return Get(relative).Type == tokenType;
     }
 
     private IExpression Expression()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         Trace("Expression");
         return Assignment();
     }
 
     private IExpression Assignment()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         if (LookMatch(0, TokenType.Identifier) && LookMatch(1, TokenType.Eq))
         {
             var name = Consume(TokenType.Identifier).Value!;
@@ -401,6 +429,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression BitwiseOr()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = BitwiseXor();
 
         while (true)
@@ -419,6 +449,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression BitwiseXor()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = BitwiseAnd();
 
         while (true)
@@ -437,6 +469,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression BitwiseAnd()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = Equality();
 
         while (true)
@@ -455,6 +489,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Equality()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = NumberRelation();
 
         while (true)
@@ -479,6 +515,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression NumberRelation()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = Addition();
 
         while (true)
@@ -515,6 +553,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Addition()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = Multiplication();
 
         while (true)
@@ -539,6 +579,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Multiplication()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = Power();
 
         while (true)
@@ -569,6 +611,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Power()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         var result = Unary();
 
         while (true)
@@ -587,6 +631,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Unary()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         if (Match(TokenType.Tilde))
         {
             return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.BitwiseNegation, Unary());
@@ -612,6 +658,8 @@ public class Parser(List<Token> tokens)
 
     private IExpression Primary()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         Trace("Primary");
         var current = Get();
         IExpression? result = null;
@@ -681,6 +729,8 @@ public class Parser(List<Token> tokens)
             throw new Exception($"Syntax error: unexpected {current}");
         }
 
+        cancellationToken?.ThrowIfCancellationRequested();
+
         if (LookMatch(0, TokenType.LeftParen)) // TODO do this in the infinite loop, alongside LeftBracket and Dot
         {
             Trace("LeftParen after");
@@ -709,6 +759,8 @@ public class Parser(List<Token> tokens)
 
     private bool Match(TokenType tokenType)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         if (Get().Type != tokenType)
         {
             return false;
@@ -720,16 +772,22 @@ public class Parser(List<Token> tokens)
 
     private Token Get(int relative = 0)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         return GetAbsolute(_position + relative);
     }
 
     private void SkipOptionalNewline()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         Match(TokenType.EndOfLine);
     }
 
     private Token GetAbsolute(int absolute)
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         ArgumentOutOfRangeException.ThrowIfNegative(absolute);
         if (absolute < _length) return tokens[absolute];
 

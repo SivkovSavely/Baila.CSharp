@@ -2,7 +2,11 @@
 
 namespace Baila.CSharp.Lexer;
 
-public class Lexer(string source, string filename, LexerMode mode = LexerMode.Regular)
+public class Lexer(
+    string source,
+    string filename,
+    LexerMode mode = LexerMode.Regular,
+    CancellationToken? cancellationToken = null)
 {
     private readonly Cursor _cursor = new(0, 1, 1, filename);
     private readonly List<Token> _tokens = [];
@@ -797,6 +801,8 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
 
     private char Next()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         _cursor.Position++;
         _cursor.Column++;
 
@@ -812,6 +818,8 @@ public class Lexer(string source, string filename, LexerMode mode = LexerMode.Re
 
     private char Current()
     {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         return Peek(0);
     }
 

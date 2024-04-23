@@ -1,4 +1,6 @@
-﻿namespace Baila.CSharp.Ast.Statements;
+﻿using Baila.CSharp.Interpreter.Stdlib;
+
+namespace Baila.CSharp.Ast.Statements;
 
 public class BlockStatement : IStatement
 {
@@ -9,6 +11,18 @@ public class BlockStatement : IStatement
     public void AddStatement(IStatement statement)
     {
         _statements.Add(statement);
+    }
+
+    public void Execute()
+    {
+        NameTable.PushScope();
+
+        foreach (var stmt in _statements)
+        {
+            stmt.Execute();
+        }
+        
+        NameTable.PopScope();
     }
 
     public override string ToString()

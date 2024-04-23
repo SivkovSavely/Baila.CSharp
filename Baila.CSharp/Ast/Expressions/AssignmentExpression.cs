@@ -1,4 +1,6 @@
-﻿using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -7,6 +9,13 @@ public class AssignmentExpression(string target, IExpression expression) : IExpr
     public BailaType? GetBailaType()
     {
         return expression.GetBailaType();
+    }
+
+    public IValue Evaluate()
+    {
+        var value = expression.Evaluate();
+        NameTable.Set(target, value);
+        return value;
     }
 
     public string Stringify()

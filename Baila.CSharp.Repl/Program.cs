@@ -1,5 +1,4 @@
-﻿using Baila.CSharp.Interpreter.StatementInterpreters;
-using Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Lexer;
 using Baila.CSharp.Parser;
 
 if (args.Length > 0)
@@ -7,7 +6,7 @@ if (args.Length > 0)
     var lexer = new Lexer(File.ReadAllText(args[0]), args[0]);
     var parser = new Parser(lexer.Tokenize());
     var ast = parser.BuildAst();
-    ast.InterpretExecute();
+    ast.Execute();
     return;
 }
 
@@ -43,7 +42,7 @@ while (true)
 
         Console.WriteLine("PROGRAM RUNNING:");
 #endif
-        ast.InterpretExecute();
+        ast.Execute();
     }
     catch (Exception e)
     {

@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -17,6 +18,11 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IE
     public BailaType? GetBailaType()
     {
         return expr.GetBailaType();
+    }
+
+    public IValue Evaluate()
+    {
+        throw new NotImplementedException();
     }
 
     public string Stringify()

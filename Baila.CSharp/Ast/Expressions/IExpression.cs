@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -15,4 +16,6 @@ public interface IExpression
     /// Returns the Baila type that is the result of the expression evaluation.
     /// </summary>
     BailaType? GetBailaType();
+
+    IValue Evaluate();
 }

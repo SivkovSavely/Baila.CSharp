@@ -1,7 +1,6 @@
 ﻿using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Interpreter.ControlFlowExceptions;
-using Baila.CSharp.Interpreter.StatementInterpreters;
 using Baila.CSharp.Runtime.Values.Abstractions;
 
 namespace Baila.CSharp.Interpreter;
@@ -14,7 +13,7 @@ public class StatementCallable(IStatement statement) : IBailaCallable
     {
         try
         {
-            Statement.InterpretExecute();
+            Statement.Execute();
         }
         catch (ControlFlowReturnException returnException)
         {

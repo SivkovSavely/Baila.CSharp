@@ -1,4 +1,3 @@
-using Baila.CSharp.Interpreter.StatementInterpreters;
 using Baila.CSharp.Interpreter.Stdlib;
 
 namespace Baila.CSharp.Tests;
@@ -20,7 +19,7 @@ public class ForStatementTests
         var stmt = parser.BuildAst();
 
         Assert.False(NameTable.Exists("i"), "Loop counter should not exist at this point in time");
-        stmt.InterpretExecute();
+        stmt.Execute();
         Assert.False(NameTable.Exists("i"), "Loop counter should not be exposed to the scope after loop ran");
     }
 }

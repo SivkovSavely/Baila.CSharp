@@ -1,6 +1,5 @@
 ﻿using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
-using Baila.CSharp.Interpreter.ExpressionInterpreters;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -18,7 +17,7 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         var args = new BailaCallableArgs();
         for (var i = 0; i < arguments.Count; i++)
         {
-            args.AddArgument($"par{i}", arguments[i].InterpretEvaluate());
+            args.AddArgument($"par{i}", arguments[i].Evaluate());
         }
 
         var overloads = GetOverloads(args);
@@ -34,7 +33,7 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
         for (var i = 0; i < overload.Parameters.Count; i++)
         {
             var parameter = overload.Parameters[i];
-            var value = arguments[i].InterpretEvaluate();
+            var value = arguments[i].Evaluate();
             args.AddArgument(parameter.Name, value);
             NameTable.AddVariable(parameter.Name, parameter.Type, value);
         }

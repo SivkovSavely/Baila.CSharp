@@ -1,4 +1,6 @@
-﻿using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Runtime.Values;
+using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -40,6 +42,12 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
 
         private static Operator Add(Operator op) { All.Add(op); return op; }
     }
+    
+    private static readonly Dictionary<Operator, Func<IValue, IValue, IValue>> BinaryOperators = new()
+    {
+        [Operator.IntIntAddition] =
+            (left, right) => new IntValue(left.GetAsInteger() + right.GetAsInteger()),
+    };
 
     public BailaType? GetBailaType()
     {
@@ -51,6 +59,13 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
         return op?.ResultType;
     }
 
+    public IValue Evaluate()
+    {
+        var op = GetOperator(this);
+        var result = op.callback(Left.Evaluate(), Right.Evaluate());
+        return result;
+    }
+
     public string Stringify()
     {
         return $"{Left.Stringify()} {BinaryOperation} {Right.Stringify()}";
@@ -59,5 +74,20 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
     public override string ToString()
     {
         return $"BinaryExpression({Left} {BinaryOperation} {Right})";
+    }
+    
+    private (Operator op, Func<IValue, IValue, IValue> callback) GetOperator(BinaryExpression expression)
+    {
+        var (op, callback) = BinaryOperators.FirstOrDefault(op =>
+            op.Key.Operation == expression.BinaryOperation &&
+            op.Key.LeftType == expression.Left.GetBailaType() &&
+            op.Key.RightType == expression.Right.GetBailaType());
+
+        if (op is null)
+        {
+            throw new Exception($"Cannot use the operator '{expression.BinaryOperation.Op}' on operands of types '{expression.Left.GetBailaType()}' and '{expression.Right.GetBailaType()}'");
+        }
+
+        return (op, callback);
     }
 }

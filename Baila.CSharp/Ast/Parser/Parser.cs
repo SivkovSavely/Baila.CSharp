@@ -1,9 +1,9 @@
 ﻿// #define PARSER_TRACE_ENABLED
 
 using Baila.CSharp.Ast.Expressions;
+using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Lexer;
-using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Parser;
@@ -141,7 +141,7 @@ public class Parser(List<Token> tokens)
     private FunctionDefineStatement FunctionDefinition()
     {
         var name = Consume(TokenType.Identifier).Value!;
-        var parameters = new List<FunctionDefineStatement.FunctionParameter>();
+        var parameters = new List<FunctionParameter>();
         BailaType? returnType = null;
 
         if (Match(TokenType.LeftParen))
@@ -159,7 +159,7 @@ public class Parser(List<Token> tokens)
                 }
 
                 parameters.Add(
-                    new FunctionDefineStatement.FunctionParameter(
+                    new FunctionParameter(
                         paramName, paramType, defaultValue, false));
 
                 if (Match(TokenType.RightParen)) break;

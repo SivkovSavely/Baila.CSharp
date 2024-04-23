@@ -1,5 +1,4 @@
 using Baila.CSharp.Ast.Statements;
-using Baila.CSharp.Interpreter.StatementInterpreters;
 using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
@@ -17,7 +16,7 @@ public class FunctionOverloadTests(ITestOutputHelper testOutputHelper)
                          testFunc(123)
                          """);
         
-        ast.InterpretExecute();
+        ast.Execute();
     }
 
     [Fact]
@@ -37,7 +36,7 @@ public class FunctionOverloadTests(ITestOutputHelper testOutputHelper)
                          testFunc(123, 456)
                          """);
         
-        ast.InterpretExecute();
+        ast.Execute();
     }
 
     private static IStatement GetAst(string source)

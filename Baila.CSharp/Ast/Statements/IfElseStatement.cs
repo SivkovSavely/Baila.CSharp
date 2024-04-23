@@ -12,6 +12,18 @@ public class IfElseStatement(
     public IStatement TrueStatement { get; } = trueStatement;
     public IStatement? FalseStatement { get; } = falseStatement;
 
+    public void Execute()
+    {
+        if (Condition.Evaluate().GetAsBoolean())
+        {
+            TrueStatement.Execute();
+        }
+        else
+        {
+            FalseStatement?.Execute();
+        }
+    }
+
     public override string ToString()
     {
         return $"IfElseStatement(Condition={Condition}, TrueStatement={TrueStatement}" +

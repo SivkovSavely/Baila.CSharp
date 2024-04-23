@@ -653,6 +653,11 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.Minus, Unary());
         }
 
+        if (Match(TokenType.Typeof))
+        {
+            return new TypeOfExpression(Unary());
+        }
+
         return Primary();
     }
 

@@ -23,6 +23,12 @@ public record BailaType(string ClassName, bool Nullable = false, List<BailaType>
             return true;
         }
 
+        if (targetType.ClassName == ClassName && targetType.Nullable && !Nullable)
+        {
+            // We can implicitly convert non-nullable T to nullable T.
+            return true;
+        }
+
         return false;
     }
 

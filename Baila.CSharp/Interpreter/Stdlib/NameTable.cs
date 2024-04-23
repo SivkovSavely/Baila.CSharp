@@ -156,7 +156,7 @@ public class NameTable
                     ],
                     null),
             ],
-            name: "typeof"));
+            name: "type_of"));
     }
 
     public static Member Get(string name)

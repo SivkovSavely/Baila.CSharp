@@ -1,46 +1,60 @@
 ﻿using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
+using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class VariableDefineStatement(string name, BailaType? type, IExpression? value) : IStatement
+public class VariableDefineStatement(string name, BailaType? type, IExpression? valueExpression) : IStatement
 {
     public string Name { get; } = name;
     public BailaType? Type { get; } = type;
-    public IExpression? Value { get; } = value;
+    public IExpression? ValueExpression { get; } = valueExpression;
 
     public void Execute()
     {
+        BailaType variableType, valueType;
+        IValue value;
         if (Type == null)
         {
             // Infer from the value
-            if (Value == null)
+            if (ValueExpression == null)
             {
                 throw new Exception(
                     $"Error: either type or value should be provided for the variable {Name}");
             }
-
-            var evaled = Value.Evaluate();
-            NameTable.AddVariable(Name, evaled.GetBailaType(), evaled);
-            return;
+            
+            value = ValueExpression.Evaluate();
+            valueType = ValueExpression.GetBailaType()!;
+            variableType = valueType;
         }
-
-        if (Value == null)
+        else if (ValueExpression == null)
         {
             // Infer default value from the type
-            NameTable.AddVariable(Name, Type, Type.GetDefaultValue());
-            return;
+            value = Type.GetDefaultValue();
+            valueType = value.GetBailaType();
+            variableType = Type;
+        }
+        else
+        {
+            value = ValueExpression.Evaluate();
+            valueType = ValueExpression.GetBailaType()!;
+            variableType = Type;
         }
         
-        NameTable.AddVariable(Name, Type, Value.Evaluate());
+        if (!valueType.IsImplicitlyConvertibleTo(variableType))
+        {
+            throw new Exception($"Cannot convert '{valueType}' to '{Type}'");
+        }
+        
+        NameTable.AddVariable(Name, variableType, value);
     }
 
     public override string ToString()
     {
         return $"VariableDefineStatement(Name={Name}, " +
                $"Type={Type}, " +
-               $"Value={Value})";
+               $"Value={ValueExpression})";
     }
 }

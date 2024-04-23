@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Ast.Functional;
+﻿using System.Collections.Immutable;
+using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -7,7 +8,7 @@ namespace Baila.CSharp.Interpreter.Stdlib;
 
 public class NameTable
 {
-    public record Member(BailaType Type, IValue Value, bool Immutable = false)
+    public record Member(string Name, BailaType Type, IValue Value, bool Immutable = false)
     {
         public IValue Value { get; internal set; } = Value;
     }
@@ -25,7 +26,12 @@ public class NameTable
                 throw new Exception($"'{name}' is already defined");
             }
 
-            _members[name] = new Member(type, value, Immutable: false);
+            if (!value.GetBailaType().IsImplicitlyConvertibleTo(type))
+            {
+                throw new Exception($"Cannot convert '{value.GetBailaType()}' to '{type}'");
+            }
+
+            _members[name] = new Member(name, type, value, Immutable: false);
         }
 
         public void AddVariableInferred(string name, IValue value)
@@ -40,7 +46,12 @@ public class NameTable
                 throw new Exception($"'{name}' is already defined");
             }
 
-            _members[name] = new Member(value.GetBailaType(), value, Immutable: true);
+            if (!value.GetBailaType().IsImplicitlyConvertibleTo(value.GetBailaType()))
+            {
+                throw new Exception($"Cannot convert '{value.GetBailaType()}' to '{value.GetBailaType()}'");
+            }
+
+            _members[name] = new Member(name, value.GetBailaType(), value, Immutable: true);
         }
 
         public Member GetMember(string name)
@@ -62,7 +73,10 @@ public class NameTable
                 throw new Exception($"'{name}' is constant");
             }
 
-            // TODO type check
+            if (!value.GetBailaType().IsImplicitlyConvertibleTo(member.Type))
+            {
+                throw new Exception($"Cannot convert '{value.GetBailaType()}' to '{member.Type}'");
+            }
 
             member.Value = value;
         }

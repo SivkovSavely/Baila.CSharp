@@ -39,6 +39,16 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
         public static readonly List<Operator> All = [];
 
         public static readonly Operator IntIntAddition = Add(new Operator(Operation.Addition, BailaType.Int, BailaType.Int, BailaType.Int));
+        public static readonly Operator IntIntSubtraction = Add(new Operator(Operation.Subtraction, BailaType.Int, BailaType.Int, BailaType.Int));
+        public static readonly Operator IntIntMultiplication = Add(new Operator(Operation.Multiplication, BailaType.Int, BailaType.Int, BailaType.Int));
+        public static readonly Operator IntIntIntegerDivision = Add(new Operator(Operation.IntegerDivision, BailaType.Int, BailaType.Int, BailaType.Int));
+        public static readonly Operator IntIntFloatDivision = Add(new Operator(Operation.FloatDivision, BailaType.Int, BailaType.Int, BailaType.Float));
+        public static readonly Operator IntIntLessThan = Add(new Operator(Operation.LessThan, BailaType.Int, BailaType.Int, BailaType.Bool));
+        public static readonly Operator IntIntLessThanOrEqual = Add(new Operator(Operation.LessThanOrEqual, BailaType.Int, BailaType.Int, BailaType.Bool));
+        public static readonly Operator IntIntGreaterThan = Add(new Operator(Operation.GreaterThan, BailaType.Int, BailaType.Int, BailaType.Bool));
+        public static readonly Operator IntIntGreaterThanOrEqual = Add(new Operator(Operation.GreaterThanOrEqual, BailaType.Int, BailaType.Int, BailaType.Bool));
+        public static readonly Operator IntIntEquality = Add(new Operator(Operation.Equality, BailaType.Int, BailaType.Int, BailaType.Bool));
+        public static readonly Operator IntIntInequality = Add(new Operator(Operation.Inequality, BailaType.Int, BailaType.Int, BailaType.Bool));
 
         private static Operator Add(Operator op) { All.Add(op); return op; }
     }
@@ -47,6 +57,26 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
     {
         [Operator.IntIntAddition] =
             (left, right) => new IntValue(left.GetAsInteger() + right.GetAsInteger()),
+        [Operator.IntIntSubtraction] =
+            (left, right) => new IntValue(left.GetAsInteger() - right.GetAsInteger()),
+        [Operator.IntIntMultiplication] =
+            (left, right) => new IntValue(left.GetAsInteger() * right.GetAsInteger()),
+        [Operator.IntIntIntegerDivision] =
+            (left, right) => new IntValue(left.GetAsInteger() / right.GetAsInteger()),
+        [Operator.IntIntFloatDivision] =
+            (left, right) => new FloatValue((float)left.GetAsInteger() / right.GetAsInteger()),
+        [Operator.IntIntLessThan] =
+            (left, right) => new BooleanValue(left.GetAsInteger() < right.GetAsInteger()),
+        [Operator.IntIntLessThanOrEqual] =
+            (left, right) => new BooleanValue(left.GetAsInteger() <= right.GetAsInteger()),
+        [Operator.IntIntGreaterThan] =
+            (left, right) => new BooleanValue(left.GetAsInteger() > right.GetAsInteger()),
+        [Operator.IntIntGreaterThanOrEqual] =
+            (left, right) => new BooleanValue(left.GetAsInteger() >= right.GetAsInteger()),
+        [Operator.IntIntEquality] =
+            (left, right) => new BooleanValue(left.GetAsInteger() == right.GetAsInteger()),
+        [Operator.IntIntInequality] =
+            (left, right) => new BooleanValue(left.GetAsInteger() != right.GetAsInteger()),
     };
 
     public BailaType? GetBailaType()

@@ -2,6 +2,15 @@
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Parser;
 
+if (args.Length > 0)
+{
+    var lexer = new Lexer(File.ReadAllText(args[0]), args[0]);
+    var parser = new Parser(lexer.Tokenize());
+    var ast = parser.BuildAst();
+    ast.InterpretExecute();
+    return;
+}
+
 Console.WriteLine("Hello from Baila");
 
 while (true)

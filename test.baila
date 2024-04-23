@@ -1,0 +1,7 @@
+﻿var x = 123
+print(x)
+
+if x > 100
+    print(x + 100)
+else
+    print(1000 - x)

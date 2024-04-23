@@ -85,6 +85,11 @@ public class NameTable
         {
             return _members.ContainsKey(name);
         }
+
+        public IEnumerable<Member> GetDefinedMembers()
+        {
+            return _members.Values.ToImmutableList();
+        }
     }
 
     private record ScopeFindData(bool IsFound = false, Scope? Scope = null)
@@ -230,6 +235,26 @@ public class NameTable
 
         result.IsFound = false;
         result.Scope = CurrentScope;
+        return result;
+    }
+
+    public static IEnumerable<Member> GetAllMembers()
+    {
+        var result = new List<Member>();
+
+        Scope? current = CurrentScope;
+        
+        do
+        {
+            foreach (var variable in CurrentScope.GetDefinedMembers())
+            {
+                if (result.Any(m => m.Name == variable.Name)) continue;
+                result.Add(variable);
+            }
+
+            current = current.ParentScope;
+        } while (current != null);
+
         return result;
     }
 }

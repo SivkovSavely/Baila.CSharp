@@ -55,6 +55,6 @@ public class FunctionDefinitionTests
         var parser = new Parser.Parser(lexer.Tokenize());
         var astRoot = parser.BuildAst();
         Assert.IsType<BlockStatement>(astRoot);
-        return (astRoot as BlockStatement)!.Statements.ToArray();
+        return astRoot.StatementList.ToArray();
     }
 }

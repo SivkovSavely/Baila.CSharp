@@ -13,9 +13,9 @@ public class Parser(List<Token> tokens)
     private int _position;
     private readonly int _length = tokens.Count;
 
-    public IStatement BuildAst()
+    public Statements BuildAst()
     {
-        var result = new BlockStatement();
+        var result = new Statements();
 
         while (!Match(TokenType.EndOfFile))
         {

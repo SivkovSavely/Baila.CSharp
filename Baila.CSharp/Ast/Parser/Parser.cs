@@ -1,5 +1,6 @@
 ﻿// #define PARSER_TRACE_ENABLED
 
+using System.Text;
 using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Statements;
@@ -13,6 +14,8 @@ public class Parser(List<Token> tokens)
     private int _position;
     private readonly int _length = tokens.Count;
 
+    private readonly Stack<int> _rollbackPositions = new();
+
     public Statements BuildAst()
     {
         var result = new Statements();
@@ -25,7 +28,7 @@ public class Parser(List<Token> tokens)
         return result;
     }
 
-    private IStatement Statement()
+    private IStatement Statement(bool requireEndOfStatement = true)
     {
         IStatement stmt = null!;
 
@@ -112,23 +115,32 @@ public class Parser(List<Token> tokens)
             // TODO class declaration
             throw new NotImplementedException();
         }
+        else if (Match(TokenType.EndOfLine) || Match(TokenType.Semicolon))
+        {
+            Trace("EOL or Semicolon");
+            return new NoOpStatement();
+        }
         else
         {
             Trace("ExpressionStatement");
             stmt = new ExpressionStatement(Expression());
         }
-
-        if (!LookMatch(0, TokenType.EndOfLine) &&
-            !LookMatch(0, TokenType.Semicolon) &&
-            !LookMatch(0, TokenType.EndOfFile) &&
-            !LookMatch(0, TokenType.RightCurly))
+        
+        if (requireEndOfStatement)
         {
-            throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
-        }
+            if (!LookMatch(0, TokenType.EndOfLine) &&
+                !LookMatch(0, TokenType.Semicolon) &&
+                !LookMatch(0, TokenType.EndOfFile) &&
+                !LookMatch(0, TokenType.RightCurly) &&
+                !LookMatch(0, TokenType.Else))
+            {
+                throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
+            }
 
-        if (LookMatch(0, TokenType.EndOfLine)) SkipConsecutive(TokenType.EndOfLine);
-        else if (LookMatch(0, TokenType.Semicolon)) SkipConsecutive(TokenType.Semicolon);
-        else if (LookMatch(0, TokenType.EndOfFile)) Consume(TokenType.EndOfFile);
+            if (LookMatch(0, TokenType.EndOfLine)) Consume(TokenType.EndOfLine);
+            else if (LookMatch(0, TokenType.Semicolon)) Consume(TokenType.Semicolon);
+            else if (LookMatch(0, TokenType.EndOfFile)) Consume(TokenType.EndOfFile);
+        }
 
         if (stmt == null)
         {
@@ -238,11 +250,20 @@ public class Parser(List<Token> tokens)
     private IStatement IfElseStatement()
     {
         var condition = Expression();
-        var trueStmt = StatementOrBlock();
+        var trueStmt = StatementOrBlock(false);
+
+        _rollbackPositions.Push(_position);
+        SkipConsecutive(TokenType.EndOfLine);
+        
         IStatement? falseStmt = null;
         if (Match(TokenType.Else))
         {
-            falseStmt = StatementOrBlock();
+            falseStmt = StatementOrBlock(false);
+            _rollbackPositions.Pop();
+        }
+        else
+        {
+            _position = _rollbackPositions.Pop();
         }
 
         return new IfElseStatement(condition, trueStmt, falseStmt);
@@ -304,25 +325,25 @@ public class Parser(List<Token> tokens)
         return new DoWhileStatement(condition, body);
     }
 
-    private IStatement StatementOrBlock()
+    private IStatement StatementOrBlock(bool requireEndOfStatement = true)
     {
         SkipConsecutive(TokenType.EndOfLine);
 
         if (LookMatch(0, TokenType.LeftCurly))
         {
-            return StatementBlock();
+            return StatementBlock(requireEndOfStatement);
         }
 
-        return Statement();
+        return Statement(requireEndOfStatement);
     }
 
-    private IStatement StatementBlock()
+    private IStatement StatementBlock(bool requireEndOfStatement = true)
     {
         var block = new BlockStatement();
         Consume(TokenType.LeftCurly);
         while (!Match(TokenType.RightCurly))
         {
-            block.AddStatement(Statement());
+            block.AddStatement(Statement(requireEndOfStatement));
         }
 
         return block;
@@ -736,5 +757,34 @@ public class Parser(List<Token> tokens)
 #if PARSER_TRACE_ENABLED
         Console.WriteLine($"Trace: {message}. Get(0) = {Get()} ({Get().Cursor})"); 
 #endif
+    }
+
+    private string TraceTokens()
+    {
+        var sb = new StringBuilder();
+
+        var longestLineCol = tokens.Select(t => $"{t.Cursor.Line}:{t.Cursor.Column}").Max(x => x.Length) + 1;
+        var selection = 10;
+
+        foreach (var token in tokens)
+        {
+            var lineCol = $"{token.Cursor.Line}:{token.Cursor.Column} ";
+            sb.Append(lineCol);
+            if (token == Get())
+            {
+                sb.Append(new string('>', selection));
+                sb.Append(' ');
+                sb.Append(token);
+                sb.Append(' ');
+                sb.AppendLine(new string('<', selection));
+            }
+            else
+            {
+                sb.Append(new string(' ', selection - lineCol.Length + longestLineCol));
+                sb.AppendLine(token.ToString());
+            }
+        }
+        
+        return sb.ToString();
     }
 }

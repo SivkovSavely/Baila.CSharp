@@ -1,9 +1,16 @@
-﻿namespace Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Expressions;
 
 public class FunctionCallExpression(IExpression functionHolder, List<IExpression> callArgs) : IExpression
 {
     public IExpression FunctionHolder { get; } = functionHolder;
     public List<IExpression> CallArgs { get; } = callArgs;
+
+    public BailaType? GetBailaType()
+    {
+        return null;
+    }
 
     public string Stringify()
     {

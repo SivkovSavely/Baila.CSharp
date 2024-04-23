@@ -14,5 +14,5 @@ public interface IExpression
     /// <summary>
     /// Returns the Baila type that is the result of the expression evaluation.
     /// </summary>
-    BailaType? GetBailaType() => null;
+    BailaType? GetBailaType();
 }

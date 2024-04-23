@@ -1,7 +1,14 @@
-﻿namespace Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Typing;
+
+namespace Baila.CSharp.Ast.Expressions;
 
 public class AssignmentExpression(string target, IExpression expression) : IExpression
 {
+    public BailaType? GetBailaType()
+    {
+        return expression.GetBailaType();
+    }
+
     public string Stringify()
     {
         return $"{target} = {expression.Stringify()}";

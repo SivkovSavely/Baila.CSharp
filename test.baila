@@ -23,3 +23,20 @@ if true print("stu") else {
 }
 if true print("yza") else {
     print("bcd")}
+if true print("efg")
+if true {print("hij")}
+if true { print("klm") }
+if true {
+    print("nop") }
+if true {
+    print("qrs")
+}
+if true
+{
+    print("tuv")
+}
+if true
+{
+    print("wxy")}
+if true
+{print("zab")}

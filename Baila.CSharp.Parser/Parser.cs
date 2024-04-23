@@ -117,8 +117,8 @@ public class Parser(List<Token> tokens)
             throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
         }
 
-        if (LookMatch(0, TokenType.EndOfLine)) Consume(TokenType.EndOfLine);
-        else if (LookMatch(0, TokenType.Semicolon)) Consume(TokenType.Semicolon);
+        if (LookMatch(0, TokenType.EndOfLine)) SkipConsecutive(TokenType.EndOfLine);
+        else if (LookMatch(0, TokenType.Semicolon)) SkipConsecutive(TokenType.Semicolon);
         else if (LookMatch(0, TokenType.EndOfFile)) Consume(TokenType.EndOfFile);
 
         if (stmt == null)
@@ -327,6 +327,14 @@ public class Parser(List<Token> tokens)
 
         _position++;
         return current;
+    }
+
+    private void SkipConsecutive(TokenType tokenType)
+    {
+        while (Get().Type == tokenType)
+        {
+            Consume(tokenType);
+        }
     }
 
     private bool LookMatch(int relative, TokenType tokenType)

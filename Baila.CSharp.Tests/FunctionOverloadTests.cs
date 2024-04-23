@@ -2,7 +2,7 @@ using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Interpreter.StatementInterpreters;
 using Xunit.Abstractions;
 
-namespace Baila.CSharp.Runtime.Tests;
+namespace Baila.CSharp.Tests;
 
 public class FunctionOverloadTests(ITestOutputHelper testOutputHelper)
 {

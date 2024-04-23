@@ -1,7 +1,7 @@
 using Baila.CSharp.Interpreter.StatementInterpreters;
 using Baila.CSharp.Interpreter.Stdlib;
 
-namespace Baila.CSharp.Interpreter.Tests;
+namespace Baila.CSharp.Tests;
 
 public class ForStatementTests
 {

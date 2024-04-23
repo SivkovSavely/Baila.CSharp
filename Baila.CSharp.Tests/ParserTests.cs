@@ -1,6 +1,6 @@
 using Baila.CSharp.Ast.Statements;
 
-namespace Baila.CSharp.Parser.Tests;
+namespace Baila.CSharp.Tests;
 
 public class ParserTests
 {
@@ -36,7 +36,7 @@ public class ParserTests
     private IStatement[] ParseSource(string source)
     {
         var lexer = new Lexer.Lexer(source, "test.baila");
-        var parser = new Parser(lexer.Tokenize());
+        var parser = new Parser.Parser(lexer.Tokenize());
         var astRoot = parser.BuildAst();
         Assert.IsType<BlockStatement>(astRoot);
         return (astRoot as BlockStatement)!.Statements.ToArray();

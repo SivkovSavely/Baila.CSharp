@@ -1,10 +1,11 @@
 using Baila.CSharp.Lexer;
+using Baila.CSharp.Tests.Infrastructure;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Baila.CSharp.Tests;
 
-public class LexerTests(ITestOutputHelper testOutputHelper)
+public class LexerTests(ITestOutputHelper testOutputHelper) : TestsBase
 {
     [Fact]
     public void SimpleProgramTest()

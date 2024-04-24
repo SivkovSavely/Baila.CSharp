@@ -1,60 +1,51 @@
-using Baila.CSharp.Ast.Statements;
+using Baila.CSharp.Tests.Infrastructure;
 
 namespace Baila.CSharp.Tests;
 
-public class FunctionDefinitionTests
+public class FunctionDefinitionTests : TestsBase
 {
     [Fact]
     public void BraceOnOtherLine_ShouldParse()
     {
-        ParseSource("""
-                    function test() : Int
-                    {
-                    }
-                    """);
+        CompileProgram("""
+                       function test() : Int
+                       {
+                       }
+                       """);
     }
 
     [Fact]
     public void BraceOnSameLine_ShouldParse()
     {
-        ParseSource("""
-                    function test() : Int {
-                    }
-                    """);
+        CompileProgram("""
+                       function test() : Int {
+                       }
+                       """);
     }
 
     [Fact]
     public void ReturnTypeOnOtherLine1_ShouldParse()
     {
-        ParseSource("""
-                    function test()
-                        : Int {}
-                    """);
+        CompileProgram("""
+                       function test()
+                           : Int {}
+                       """);
     }
 
     [Fact]
     public void ReturnTypeOnOtherLine2_ShouldParse()
     {
-        ParseSource("""
-                    function test() :
-                        Int {}
-                    """);
+        CompileProgram("""
+                       function test() :
+                           Int {}
+                       """);
     }
 
     [Fact]
     public void NoParametersNoParentheses_ShouldParse()
     {
-        ParseSource("""
-                    function test : Int {}
-                    """);
-    }
-
-    private IStatement[] ParseSource(string source)
-    {
-        var lexer = new Lexer.Lexer(source, "test.baila");
-        var parser = new Parser.Parser(lexer.Tokenize());
-        var astRoot = parser.BuildAst();
-        Assert.IsType<BlockStatement>(astRoot);
-        return astRoot.StatementList.ToArray();
+        CompileProgram("""
+                       function test : Int {}
+                       """);
     }
 }

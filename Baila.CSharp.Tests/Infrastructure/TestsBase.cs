@@ -38,4 +38,10 @@ public class TestsBase
             Assert.True(assertCondition(tValue));
         }
     }
+
+    protected void AssertAst(Statements program, Action<StatementStructureAsserter> asserterSequence)
+    {
+        using var asserter = new StatementStructureAsserter(program.StatementList);
+        asserterSequence(asserter);
+    }
 }

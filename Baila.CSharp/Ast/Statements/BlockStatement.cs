@@ -2,9 +2,9 @@
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class BlockStatement : IStatement
+public class BlockStatement(List<IStatement>? statements = null) : IStatement
 {
-    private readonly List<IStatement> _statements = [];
+    private readonly List<IStatement> _statements = statements ?? [];
 
     public IEnumerable<IStatement> Statements => _statements.AsReadOnly();
 

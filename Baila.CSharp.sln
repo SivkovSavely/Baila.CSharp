@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp", "Baila.CShar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.Tests", "Baila.CSharp.Tests\Baila.CSharp.Tests.csproj", "{8DEB198C-E0F6-4BC2-A82E-744BEDC7D75F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baila.CSharp.LanguageServer", "Baila.CSharp.LanguageServer\Baila.CSharp.LanguageServer.csproj", "{1AC029FC-47EC-4972-97ED-943220CCA719}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{8DEB198C-E0F6-4BC2-A82E-744BEDC7D75F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DEB198C-E0F6-4BC2-A82E-744BEDC7D75F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DEB198C-E0F6-4BC2-A82E-744BEDC7D75F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AC029FC-47EC-4972-97ED-943220CCA719}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AC029FC-47EC-4972-97ED-943220CCA719}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AC029FC-47EC-4972-97ED-943220CCA719}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AC029FC-47EC-4972-97ED-943220CCA719}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

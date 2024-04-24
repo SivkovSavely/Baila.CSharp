@@ -1,10 +1,15 @@
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Tests.Infrastructure;
-using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
-public class FunctionOverloadTests(ITestOutputHelper testOutputHelper) : TestsBase
+public class FunctionOverloadTests : TestsBase
 {
+    public FunctionOverloadTests()
+    {
+        NameTable.CurrentScope = new NameTable.Scope();
+    }
+    
     [Fact]
     public void FunctionWithOneOverload_CallSuccessful()
     {

@@ -27,11 +27,11 @@ public class FunctionValue(string name = "") : IValue
         return value;
     }
     
-    public List<FunctionOverload> GetApplicableOverloads(BailaType[] argTypes)
+    public static List<FunctionOverload> GetApplicableOverloads(IEnumerable<FunctionOverload> overloads, BailaType[] argTypes)
     {
-        var found = new List<FunctionOverload>();
+        var applicableOverloads = new List<FunctionOverload>();
 
-        foreach (var overload in Overloads)
+        foreach (var overload in overloads)
         {
             // If we passed fewer arguments than the required parameters count, skip that overload
             if (argTypes.Length < overload.Parameters.Count(par => par.DefaultValue == null))
@@ -48,12 +48,19 @@ public class FunctionValue(string name = "") : IValue
             // Best match
             if (argTypes.SequenceEqual(overload.Parameters.Select(par => par.Type)))
             {
-                found.Add(overload);
+                applicableOverloads.Add(overload);
+                break;
+            }
+
+            // Match where some of the parameters in the function are Any
+            if (argTypes.Select((t,i) => (t,i)).All(e => overload.Parameters[e.i].Type == e.t || overload.Parameters[e.i].Type == BailaType.Any))
+            {
+                applicableOverloads.Add(overload);
                 break;
             }
         }
 
-        return found;
+        return applicableOverloads;
     }
 
     public void AddOverload(FunctionOverload overload)
@@ -63,7 +70,9 @@ public class FunctionValue(string name = "") : IValue
 
     public bool HasOverload(FunctionOverload overload)
     {
-        var applicableOverloads = GetApplicableOverloads(overload.Parameters.Select(par => par.Type).ToArray());
+        var applicableOverloads = GetApplicableOverloads(
+            Overloads,
+            overload.Parameters.Select(par => par.Type).ToArray());
         return applicableOverloads.Count != 0;
     }
     

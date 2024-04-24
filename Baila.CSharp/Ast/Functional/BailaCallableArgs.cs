@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Functional;
 
@@ -9,6 +10,7 @@ public class BailaCallableArgs
 
     public IReadOnlyDictionary<string, IValue> ArgsByName => _argsByName.AsReadOnly();
     public IEnumerable<IValue> ArgsByIndex => _argsByIndex.AsReadOnly();
+    public BailaType[] ArgumentTypes => _argsByIndex.Select(arg => arg.GetBailaType()).ToArray();
 
     public void AddArgument(string name, IValue value)
     {

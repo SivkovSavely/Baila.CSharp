@@ -292,9 +292,14 @@ public class Lexer(
                             AddToken(TokenType.EndOfLine, "EOL");
                         }
                     }
-                } else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
+                }
+                else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
                 {
                     AddToken(TokenType.Whitespace, currentChar.ToString());
+                    Next();
+                }
+                else
+                {
                     Next();
                 }
             }
@@ -472,9 +477,30 @@ public class Lexer(
         var currentChar = Current();
         var unclosedCurlies = 0;
         var isInterpolated = false;
+        var isTokenizingSimpleIdentifierInterpolation = false;
         List<Token>? interpolatedStringTokens = null;
         while (HasChars())
         {
+            if (isTokenizingSimpleIdentifierInterpolation)
+            {
+                if (!IsIdentifierContinuation(currentChar))
+                {
+                    isTokenizingSimpleIdentifierInterpolation = false;
+                    if (interpolatedStringTokens!.Count != 0)
+                    {
+                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                    }
+                    interpolatedStringTokens.Add(
+                        new Token(_cursor.Clone(), TokenType.Identifier, _buffer.ToString()));
+                    _buffer.Clear();
+                    continue;
+                }
+
+                _buffer.Append(currentChar);
+                currentChar = Next();
+                continue;
+            }
+            
             switch (currentChar)
             {
                 case '$' when Peek(1) == '{':
@@ -498,6 +524,23 @@ public class Lexer(
                                         : TokenType.DoubleQuoteStringLiteral
                                     : TokenType.StringLiteral,
                                 _buffer.ToString()));
+                        _buffer.Clear();
+                    }
+
+                    continue;
+                case '$' when IsIdentifierStart(Peek(1)):
+                    isInterpolated = true;
+                    isTokenizingSimpleIdentifierInterpolation = true;
+                    currentChar = Next(); // skip $
+                    interpolatedStringTokens ??= [];
+                    if (_buffer.Length > 0)
+                    {
+                        if (interpolatedStringTokens.Count != 0)
+                        {
+                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        }
+                        interpolatedStringTokens.Add(
+                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
                         _buffer.Clear();
                     }
 
@@ -827,5 +870,38 @@ public class Lexer(
     {
         var pos = _cursor.Position + relative;
         return pos < source.Length ? source[pos] : '\0';
+    }
+
+    private string TraceTokens()
+    {
+        var sb = new StringBuilder();
+
+        var i = 0;
+        foreach (var token in source)
+        {
+            var prettyToken = token switch
+            {
+                ' ' => "[ ]",
+                '\r' => @"[\r]",
+                '\n' => @"[\n]",
+                '\t' => @"[\t]",
+                _ => token.ToString()
+            };
+            if (i++ == _cursor.Position)
+            {
+                sb.Append(new string('>', 10));
+                sb.Append(' ');
+                sb.Append(prettyToken);
+                sb.Append(' ');
+                sb.AppendLine(new string('<', 10));
+            }
+            else
+            {
+                sb.Append(new string(' ', 11));
+                sb.AppendLine(prettyToken);
+            }
+        }
+        
+        return sb.ToString();
     }
 }

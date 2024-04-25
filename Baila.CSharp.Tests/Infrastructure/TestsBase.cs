@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
@@ -50,5 +51,15 @@ public class TestsBase
     {
         using var asserter = new StatementStructureAsserter(program.StatementList);
         asserterSequence(asserter);
+    }
+
+    protected static bool IsExprFunctionCall(IExpression expr, string name)
+    {
+        return expr is FunctionCallExpression { FunctionHolder: VariableExpression ve } && ve.Name == name;
+    }
+
+    protected static bool IsStmtFunctionCall(IStatement stmt, string name)
+    {
+        return stmt is ExpressionStatement exprStmt && IsExprFunctionCall(exprStmt.Expression, name);
     }
 }

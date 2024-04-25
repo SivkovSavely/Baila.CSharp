@@ -54,22 +54,22 @@ public class StatementStructureAsserter(IEnumerable<IStatement> statements) : ID
         }
     }
 
-    public void AssertInner<TExpr>(IExpression expr, Expression<Func<TExpr, bool>>? assertFunc = null) where TExpr : IExpression
+    public void AssertInner<TExpr>(IExpression expr, Expression<Func<TExpr, bool>>? assertExpr = null) where TExpr : IExpression
     {
         var expression = Assert.IsType<TExpr>(expr);
-        if (assertFunc != null)
+        if (assertExpr != null)
         {
             Assert.True(
-                assertFunc.Compile()(expression),
-                $"Expected '{assertFunc.Body.ToString().Trim('(', ')')}' to return true");
+                assertExpr.Compile()(expression),
+                $"Expected '{assertExpr.Body.ToString().Trim('(', ')')}' to return true");
         }
     }
 
-    public void AssertInner<TExpr>(IStatement stmt, Expression<Func<TExpr, bool>>? assertFunc = null) where TExpr : IExpression
+    public void AssertInner<TExpr>(IStatement stmt, Expression<Func<TExpr, bool>>? assertExpr = null) where TExpr : IExpression
     {
         var exprStatement = Assert.IsType<ExpressionStatement>(stmt);
         var expression = Assert.IsType<TExpr>(exprStatement.Expression);
-        AssertInner(expression, assertFunc);
+        AssertInner(expression, assertExpr);
     }
 
     public void AssertInnerFunc<TExpr>(IExpression expr, Func<TExpr, bool>? assertFunc = null) where TExpr : IExpression
@@ -88,6 +88,28 @@ public class StatementStructureAsserter(IEnumerable<IStatement> statements) : ID
         var exprStatement = Assert.IsType<ExpressionStatement>(stmt);
         var expression = Assert.IsType<TExpr>(exprStatement.Expression);
         AssertInnerFunc(expression, assertFunc);
+    }
+
+    public void AssertInnerStmt<TStmt>(IStatement stmt, Expression<Func<TStmt, bool>>? assertExpr = null) where TStmt : IStatement
+    {
+        var statement = Assert.IsType<TStmt>(stmt);
+        if (assertExpr != null)
+        {
+            Assert.True(
+                assertExpr.Compile()(statement),
+                $"Expected '{assertExpr.Body.ToString().Trim('(', ')')}' to return true");
+        }
+    }
+
+    public void AssertInnerStmt<TStmt>(IStatement stmt, Func<TStmt, bool>? assertFunc = null) where TStmt : IStatement
+    {
+        var statement = Assert.IsType<TStmt>(stmt);
+        if (assertFunc != null)
+        {
+            Assert.True(
+                assertFunc(statement),
+                "Expected assert function to return true");
+        }
     }
 
     public void AssertInnerBlock(IStatement stmt, Action<BlockStatement, StatementStructureAsserter>? assertInner = null)

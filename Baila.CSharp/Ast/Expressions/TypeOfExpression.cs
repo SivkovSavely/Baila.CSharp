@@ -2,33 +2,40 @@
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class TypeOfExpression(IExpression expr) : IExpression
+public class TypeOfExpression(IExpression expression) : IExpression
 {
+    public IExpression Expression { get; } = expression;
     public BailaType? GetBailaType()
     {
-        return expr.GetBailaType();
+        return Expression.GetBailaType();
     }
 
     public IValue Evaluate()
     {
-        if (expr is VariableExpression variableExpression)
+        if (Expression is VariableExpression variableExpression)
         {
             return new StringValue(NameTable.Get(variableExpression.Name).Type.ToString());
         }
 
-        return new StringValue(expr.GetBailaType()!.ToString());
+        return new StringValue(Expression.GetBailaType()!.ToString());
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitTypeOfExpression(this);
     }
 
     public string Stringify()
     {
-        return expr.Stringify();
+        return Expression.Stringify();
     }
 
     public override string ToString()
     {
-        return $"TypeOfExpression({expr})";
+        return $"TypeOfExpression({Expression})";
     }
 }

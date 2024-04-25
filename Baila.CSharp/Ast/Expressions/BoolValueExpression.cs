@@ -1,6 +1,7 @@
 ﻿using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -12,7 +13,12 @@ public class BoolValueExpression(bool value) : IExpression
 
     public IValue Evaluate()
     {
-        return new BooleanValue(value);
+        return new BooleanValue(Value);
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitBoolValueExpression(this);
     }
 
     public string Stringify()

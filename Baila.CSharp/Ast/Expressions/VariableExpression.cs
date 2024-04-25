@@ -1,6 +1,7 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -23,6 +24,11 @@ public class VariableExpression(string name) : IExpression
     {
         var member = NameTable.Get(Name);
         return member.Value;
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitVariableExpression(this);
     }
 
     public override string ToString()

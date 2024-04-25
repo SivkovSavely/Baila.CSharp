@@ -1,6 +1,7 @@
 ﻿using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -12,7 +13,12 @@ public class StringValueExpression(string value) : IExpression
 
     public IValue Evaluate()
     {
-        return new StringValue(value);
+        return new StringValue(Value);
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitStringValueExpression(this);
     }
 
     public string Stringify()

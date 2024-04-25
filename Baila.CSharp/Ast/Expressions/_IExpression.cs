@@ -1,5 +1,6 @@
 ﻿using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -18,4 +19,6 @@ public interface IExpression
     BailaType? GetBailaType();
 
     IValue Evaluate();
+
+    void AcceptVisitor(VisitorBase visitor);
 }

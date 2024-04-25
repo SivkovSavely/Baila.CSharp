@@ -4,6 +4,7 @@ using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
@@ -43,6 +44,11 @@ public class FunctionCallExpression(IExpression functionHolder, List<IExpression
         availableOverloads.AddRange(functionValue.Overloads);
 
         return new FunctionWithOverloads(availableOverloads).Call(CallArgs); // TODO what to do with void functions?
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitFunctionCallExpression(this);
     }
 
     public string Stringify()

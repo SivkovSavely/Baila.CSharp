@@ -40,3 +40,7 @@ if true
     print("wxy")}
 if true
 {print("zab")}
+
+testFunc()
+
+function testFunc { print("test") }

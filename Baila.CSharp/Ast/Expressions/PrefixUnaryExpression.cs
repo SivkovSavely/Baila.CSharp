@@ -1,10 +1,11 @@
 ﻿using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IExpression expr) : IExpression
+public class PrefixUnaryExpression(PrefixUnaryExpression.Operation op, IExpression operandExpression) : IExpression
 {
     public readonly record struct Operation(string Op)
     {
@@ -37,9 +38,12 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IE
         [Operator.BoolLogicalNegation] = op => new BooleanValue(!op.GetAsBoolean()),
     };
 
+    public PrefixUnaryExpression.Operation Op { get; } = op;
+    public IExpression OperandExpression { get; } = operandExpression;
+
     public BailaType? GetBailaType()
     {
-        return expr.GetBailaType();
+        return OperandExpression.GetBailaType();
     }
 
     public IValue Evaluate()
@@ -47,13 +51,18 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation operation, IE
         throw new NotImplementedException();
     }
 
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitPrefixUnaryExpression(this);
+    }
+
     public string Stringify()
     {
-        return $"{operation} {expr.Stringify()}";
+        return $"{Op} {OperandExpression.Stringify()}";
     }
 
     public override string ToString()
     {
-        return $"PrefixUnaryExpression({operation} {expr})";
+        return $"PrefixUnaryExpression({Op} {OperandExpression})";
     }
 }

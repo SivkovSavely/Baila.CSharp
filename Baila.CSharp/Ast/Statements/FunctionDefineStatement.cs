@@ -20,6 +20,13 @@ public class FunctionDefineStatement(
 
     public void Execute()
     {
+        // We define the function in the preprocessing stage.
+        // When the code actually executes, the function define statement doesn't do anything
+        // because otherwise it would try to add a function we already added in the preprocessing stage.
+    }
+
+    public void DefineFunction()
+    {
         var overload = new FunctionOverload(new StatementCallable(Body), Parameters, ReturnType);
 
         if (!NameTable.Exists(Name))

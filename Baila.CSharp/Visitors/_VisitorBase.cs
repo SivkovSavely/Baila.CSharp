@@ -7,22 +7,22 @@ public abstract class VisitorBase
 {
     #region Expressions
 
-    public void VisitAssignmentExpression(AssignmentExpression expr)
+    public virtual void VisitAssignmentExpression(AssignmentExpression expr)
     {
         expr.Expression.AcceptVisitor(this);
     }
 
-    public void VisitBinaryExpression(BinaryExpression expr)
+    public virtual void VisitBinaryExpression(BinaryExpression expr)
     {
         expr.Left.AcceptVisitor(this);
         expr.Right.AcceptVisitor(this);
     }
 
-    public void VisitBoolValueExpression(BoolValueExpression expr)
+    public virtual void VisitBoolValueExpression(BoolValueExpression expr)
     {
     }
 
-    public void VisitFunctionCallExpression(FunctionCallExpression expr)
+    public virtual void VisitFunctionCallExpression(FunctionCallExpression expr)
     {
         expr.FunctionHolder.AcceptVisitor(this);
         foreach (var callArg in expr.CallArgs)
@@ -31,25 +31,25 @@ public abstract class VisitorBase
         }
     }
 
-    public void VisitIntValueExpression(IntValueExpression expr)
+    public virtual void VisitIntValueExpression(IntValueExpression expr)
     {
     }
 
-    public void VisitPrefixUnaryExpression(PrefixUnaryExpression expr)
+    public virtual void VisitPrefixUnaryExpression(PrefixUnaryExpression expr)
     {
         expr.OperandExpression.AcceptVisitor(this);
     }
 
-    public void VisitStringValueExpression(StringValueExpression expr)
+    public virtual void VisitStringValueExpression(StringValueExpression expr)
     {
     }
 
-    public void VisitTypeOfExpression(TypeOfExpression expr)
+    public virtual void VisitTypeOfExpression(TypeOfExpression expr)
     {
         expr.Expression.AcceptVisitor(this);
     }
 
-    public void VisitVariableExpression(VariableExpression expr)
+    public virtual void VisitVariableExpression(VariableExpression expr)
     {
     }
 
@@ -57,7 +57,7 @@ public abstract class VisitorBase
 
     #region Statements
 
-    public void VisitBlockStatement(BlockStatement stmt)
+    public virtual void VisitBlockStatement(BlockStatement stmt)
     {
         foreach (var innerStatement in stmt.Statements)
         {
@@ -65,23 +65,23 @@ public abstract class VisitorBase
         }
     }
 
-    public void VisitConstantDefineStatement(ConstantDefineStatement stmt)
+    public virtual void VisitConstantDefineStatement(ConstantDefineStatement stmt)
     {
         stmt.Value.AcceptVisitor(this);
     }
 
-    public void VisitDoWhileStatement(DoWhileStatement stmt)
+    public virtual void VisitDoWhileStatement(DoWhileStatement stmt)
     {
         stmt.Condition.AcceptVisitor(this);
         stmt.Body.AcceptVisitor(this);
     }
 
-    public void VisitExpressionStatement(ExpressionStatement stmt)
+    public virtual void VisitExpressionStatement(ExpressionStatement stmt)
     {
         stmt.Expression.AcceptVisitor(this);
     }
 
-    public void VisitForStatement(ForStatement stmt)
+    public virtual void VisitForStatement(ForStatement stmt)
     {
         stmt.InitialValue.AcceptVisitor(this);
         stmt.FinalValue.AcceptVisitor(this);
@@ -89,28 +89,28 @@ public abstract class VisitorBase
         stmt.Body.AcceptVisitor(this);
     }
 
-    public void VisitFunctionDefineStatement(FunctionDefineStatement stmt)
+    public virtual void VisitFunctionDefineStatement(FunctionDefineStatement stmt)
     {
         stmt.Body.AcceptVisitor(this);
     }
 
-    public void VisitIfElseStatement(IfElseStatement stmt)
+    public virtual void VisitIfElseStatement(IfElseStatement stmt)
     {
         stmt.Condition.AcceptVisitor(this);
         stmt.TrueStatement.AcceptVisitor(this);
         stmt.FalseStatement?.AcceptVisitor(this);
     }
 
-    public void VisitNoOpStatement(NoOpStatement stmt)
+    public virtual void VisitNoOpStatement(NoOpStatement stmt)
     {
     }
 
-    public void VisitReturnStatement(ReturnStatement stmt)
+    public virtual void VisitReturnStatement(ReturnStatement stmt)
     {
         stmt.ReturnExpression?.AcceptVisitor(this);
     }
 
-    public void VisitStatements(Statements stmt)
+    public virtual void VisitStatements(Statements stmt)
     {
         foreach (var innerStatement in stmt.StatementList)
         {
@@ -118,12 +118,12 @@ public abstract class VisitorBase
         }
     }
 
-    public void VisitVariableDefineStatement(VariableDefineStatement stmt)
+    public virtual void VisitVariableDefineStatement(VariableDefineStatement stmt)
     {
         stmt.ValueExpression?.AcceptVisitor(this);
     }
 
-    public void VisitWhileStatement(WhileStatement stmt)
+    public virtual void VisitWhileStatement(WhileStatement stmt)
     {
         stmt.Condition.AcceptVisitor(this);
         stmt.Body.AcceptVisitor(this);

@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -29,6 +30,11 @@ public class Statements : IStatement
                 stmt.Execute();
             }
         }
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitStatements(this);
     }
 
     public override string ToString()

@@ -1,5 +1,6 @@
 ﻿using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -22,6 +23,11 @@ public class DoWhileStatement(
         } while (condition.GetAsBoolean());
         
         NameTable.PopScope();
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitDoWhileStatement(this);
     }
 
     public override string ToString()

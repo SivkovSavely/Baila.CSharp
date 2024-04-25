@@ -3,6 +3,7 @@ using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -49,6 +50,11 @@ public class VariableDefineStatement(string name, BailaType? type, IExpression? 
         }
         
         NameTable.AddVariable(Name, variableType, value);
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitVariableDefineStatement(this);
     }
 
     public override string ToString()

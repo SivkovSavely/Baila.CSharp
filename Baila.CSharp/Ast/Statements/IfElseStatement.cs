@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Ast.Expressions;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -22,6 +23,11 @@ public class IfElseStatement(
         {
             FalseStatement?.Execute();
         }
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitIfElseStatement(this);
     }
 
     public override string ToString()

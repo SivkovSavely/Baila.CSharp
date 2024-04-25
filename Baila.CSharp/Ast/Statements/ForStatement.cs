@@ -2,6 +2,7 @@
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -80,6 +81,11 @@ public class ForStatement(
         }
 
         NameTable.PopScope();
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitForStatement(this);
     }
 
     public override string ToString()

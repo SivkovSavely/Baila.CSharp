@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -23,6 +24,11 @@ public class BlockStatement(List<IStatement>? statements = null) : IStatement
         }
         
         NameTable.PopScope();
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitBlockStatement(this);
     }
 
     public override string ToString()

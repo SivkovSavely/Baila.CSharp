@@ -3,6 +3,7 @@ using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
+using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
@@ -44,6 +45,11 @@ public class FunctionDefineStatement(
 
             func.AddOverload(overload);
         }
+    }
+
+    public void AcceptVisitor(VisitorBase visitor)
+    {
+        visitor.VisitFunctionDefineStatement(this);
     }
 
     public override string ToString()

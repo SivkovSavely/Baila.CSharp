@@ -72,6 +72,24 @@ public class StatementStructureAsserter(IEnumerable<IStatement> statements) : ID
         AssertInner(expression, assertFunc);
     }
 
+    public void AssertInnerFunc<TExpr>(IExpression expr, Func<TExpr, bool>? assertFunc = null) where TExpr : IExpression
+    {
+        var expression = Assert.IsType<TExpr>(expr);
+        if (assertFunc != null)
+        {
+            Assert.True(
+                assertFunc(expression),
+                "Expected assert function to return true");
+        }
+    }
+
+    public void AssertInnerFunc<TExpr>(IStatement stmt, Func<TExpr, bool>? assertFunc = null) where TExpr : IExpression
+    {
+        var exprStatement = Assert.IsType<ExpressionStatement>(stmt);
+        var expression = Assert.IsType<TExpr>(exprStatement.Expression);
+        AssertInnerFunc(expression, assertFunc);
+    }
+
     public void AssertInnerBlock(IStatement stmt, Action<BlockStatement, StatementStructureAsserter>? assertInner = null)
     {
         var blockStatement = Assert.IsType<BlockStatement>(stmt);

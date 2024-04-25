@@ -18,6 +18,10 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
         public static readonly Operation Equality = new("==");
         public static readonly Operation Inequality = new("!=");
 
+        public static readonly Operation LogicalOr = new("||");
+
+        public static readonly Operation LogicalAnd = new("&&");
+
         public static readonly Operation LessThan = new("<");
         public static readonly Operation LessThanOrEqual = new("<=");
         public static readonly Operation GreaterThan = new(">");

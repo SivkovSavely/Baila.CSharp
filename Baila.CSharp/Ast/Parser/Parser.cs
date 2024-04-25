@@ -424,9 +424,6 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         return BitwiseOr();
     }
 
-    // TODO binaryOr
-    // TODO binaryAnd
-
     private IExpression BitwiseOr()
     {
         cancellationToken?.ThrowIfCancellationRequested();
@@ -471,13 +468,53 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        var result = Equality();
+        var result = LogicalOr();
 
         while (true)
         {
             if (Match(TokenType.Amp))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.BitwiseAnd, result, Equality());
+                result = new BinaryExpression(BinaryExpression.Operation.BitwiseAnd, result, LogicalOr());
+                continue;
+            }
+
+            break;
+        }
+
+        return result;
+    }
+
+    private IExpression LogicalOr()
+    {
+        cancellationToken?.ThrowIfCancellationRequested();
+
+        var result = LogicalAnd();
+
+        while (true)
+        {
+            if (Match(TokenType.BarBar))
+            {
+                result = new BinaryExpression(BinaryExpression.Operation.LogicalOr, result, LogicalAnd());
+                continue;
+            }
+
+            break;
+        }
+
+        return result;
+    }
+
+    private IExpression LogicalAnd()
+    {
+        cancellationToken?.ThrowIfCancellationRequested();
+
+        var result = Equality();
+
+        while (true)
+        {
+            if (Match(TokenType.AmpAmp))
+            {
+                result = new BinaryExpression(BinaryExpression.Operation.LogicalAnd, result, Equality());
                 continue;
             }
 

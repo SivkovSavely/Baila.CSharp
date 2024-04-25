@@ -52,8 +52,8 @@ public class FunctionValue(string name = "") : IValue
                 break;
             }
 
-            // Match where some of the parameters in the function are Any
-            if (argTypes.Select((t,i) => (t,i)).All(e => overload.Parameters[e.i].Type == e.t || overload.Parameters[e.i].Type == BailaType.Any))
+            // Match where some of the arguments in the function are implicitly convertible to respecting parameter type
+            if (argTypes.Select((t,i) => (t,i)).All(e => e.t.IsImplicitlyConvertibleTo(overload.Parameters[e.i].Type)))
             {
                 applicableOverloads.Add(overload);
                 break;

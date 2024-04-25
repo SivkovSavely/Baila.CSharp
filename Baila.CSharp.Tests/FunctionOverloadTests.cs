@@ -17,13 +17,25 @@ public class FunctionOverloadTests : TestsBase
     [Fact]
     public void FunctionWithOneOverload_CallSuccessful()
     {
-        _testOutputHelper.WriteLine("Run test FunctionWithOneOverload_CallSuccessful");
         RunProgram("""
                    function testFunc(x: Int) : Int
                    {
                    }
 
                    testFunc(123)
+                   """);
+    }
+
+    [Fact]
+    public void FunctionWithOneOverload_OverloadResolutionSuccessfulForSupertypeParameter()
+    {
+        RunProgram("""
+                   function testFunc(x: Number) : Int
+                   {
+                   }
+
+                   var reallyAnInt: Int = 123
+                   testFunc(reallyAnInt)
                    """);
     }
 

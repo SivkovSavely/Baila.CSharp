@@ -73,6 +73,28 @@ public record BailaType(string ClassName, bool Nullable = false, List<BailaType>
         return false;
     }
 
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(
+            ClassName,
+            Nullable,
+            Generics is null
+                ? 0
+                : Generics.Aggregate(0, (current, item) => HashCode.Combine(current, item.GetHashCode())));
+    }
+
+    public virtual bool Equals(BailaType? other)
+    {
+        if (other == null) return false;
+
+        bool genericsAreEqual;
+        if (Generics == null && other.Generics == null) genericsAreEqual = true;
+        else if (Generics == null || other.Generics == null) genericsAreEqual = false;
+        else genericsAreEqual = Generics.SequenceEqual(other.Generics);
+
+        return ClassName == other.ClassName && Nullable == other.Nullable && genericsAreEqual;
+    }
+
     public override string ToString()
     {
         return (Nullable ? "?" : "") +

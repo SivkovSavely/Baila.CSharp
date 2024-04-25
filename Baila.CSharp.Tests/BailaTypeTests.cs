@@ -133,6 +133,41 @@ public class BailaTypeTests : TestsBase
         child22.IsExplicitlyConvertibleTo(child12).Should().BeFalse();
     }
 
+    [Fact]
+    public void BailaType_GetHashCode_EqualsForEqualTypes()
+    {
+        var t11 = new BailaType("T1");
+        var t12 = new BailaType("T1");
+        t12.GetHashCode().Should().Be(t11.GetHashCode());
+
+        var t21 = new BailaType("T2", Generics: []);
+        var t22 = new BailaType("T2", Generics: []);
+        t22.GetHashCode().Should().Be(t21.GetHashCode());
+
+        var t31 = new BailaType("T3", Generics: [t11]);
+        var t32 = new BailaType("T3", Generics: [t12]);
+        t32.GetHashCode().Should().Be(t31.GetHashCode());
+    }
+
+    [Fact]
+    public void BailaType_EqualTypes_Equal()
+    {
+        var t11 = new BailaType("T1");
+        var t12 = new BailaType("T1");
+        (t12 == t11).Should().BeTrue();
+        t12.Equals(t11).Should().BeTrue();
+
+        var t21 = new BailaType("T2", Generics: []);
+        var t22 = new BailaType("T2", Generics: []);
+        (t22 == t21).Should().BeTrue();
+        t22.Equals(t21).Should().BeTrue();
+
+        var t31 = new BailaType("T3", Generics: [t11]);
+        var t32 = new BailaType("T3", Generics: [t12]);
+        (t32 == t31).Should().BeTrue();
+        t32.Equals(t31).Should().BeTrue();
+    }
+
     public static IEnumerable<object?[]> GetBuiltinBailaTypes()
     {
         return BuiltInBailaTypes.Select(f => new[]

@@ -6,20 +6,14 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class ForStatement(
-    string counterVariable,
-    IExpression initialValue,
-    IExpression finalValue,
-    IExpression stepValue,
-    IStatement body)
+public record ForStatement(
+    string CounterVariable,
+    IExpression InitialValue,
+    IExpression FinalValue,
+    IExpression StepValue,
+    IStatement Body)
     : IStatement
 {
-    public string CounterVariable { get; } = counterVariable;
-    public IExpression InitialValue { get; } = initialValue;
-    public IExpression FinalValue { get; } = finalValue;
-    public IExpression StepValue { get; } = stepValue;
-    public IStatement Body { get; } = body;
-
     public void Execute()
     {
         NameTable.PushScope();

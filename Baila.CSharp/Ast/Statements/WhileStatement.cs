@@ -4,14 +4,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class WhileStatement(
-    IExpression condition,
-    IStatement body)
+public record WhileStatement(
+    IExpression Condition,
+    IStatement Body)
     : IStatement
 {
-    public IExpression Condition { get; } = condition;
-    public IStatement Body { get; } = body;
-
     public void Execute()
     {
         NameTable.PushScope();

@@ -3,7 +3,7 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class Statements : IStatement
+public record Statements : IStatement
 {
     private readonly List<IStatement> _statements = [];
 

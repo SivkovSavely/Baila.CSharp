@@ -7,17 +7,13 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class FunctionDefineStatement(
-    string name,
-    List<FunctionParameter> parameters,
-    IStatement body,
-    BailaType? returnType) : IStatement
+public record FunctionDefineStatement(
+    string Name,
+    List<FunctionParameter> Parameters,
+    IStatement Body,
+    BailaType? ReturnType)
+    : IStatement
 {
-    public string Name { get; } = name;
-    public List<FunctionParameter> Parameters { get; } = parameters;
-    public IStatement Body { get; } = body;
-    public BailaType? ReturnType { get; } = returnType;
-
     public void Execute()
     {
         // We define the function in the preprocessing stage.

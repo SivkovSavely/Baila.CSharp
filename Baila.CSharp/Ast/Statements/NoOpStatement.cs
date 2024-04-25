@@ -2,7 +2,7 @@
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class NoOpStatement : IStatement
+public record NoOpStatement : IStatement
 {
     public void Execute()
     {

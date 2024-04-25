@@ -4,10 +4,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class ReturnStatement(IExpression? returnExpression = null) : IStatement
+public record ReturnStatement(IExpression? ReturnExpression = null) : IStatement
 {
-    public IExpression? ReturnExpression { get; } = returnExpression;
-
     public void Execute()
     {
         throw new ControlFlowReturnException(ReturnExpression?.Evaluate());

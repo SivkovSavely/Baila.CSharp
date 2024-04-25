@@ -4,10 +4,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class ExpressionStatement(IExpression expression) : IStatement
+public record ExpressionStatement(IExpression Expression) : IStatement
 {
-    public IExpression Expression { get; } = expression;
-
     public IValue? Value { get; set; }
 
     public void Execute()

@@ -4,11 +4,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class ConstantDefineStatement(string name, IExpression value) : IStatement
+public record ConstantDefineStatement(string Name, IExpression Value) : IStatement
 {
-    public string Name { get; } = name;
-    public IExpression Value { get; } = value;
-
     public void Execute()
     {
         NameTable.AddConstant(Name, Value.Evaluate());

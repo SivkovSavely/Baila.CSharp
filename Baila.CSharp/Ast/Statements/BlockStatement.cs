@@ -3,9 +3,14 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class BlockStatement(List<IStatement>? statements = null) : IStatement
+public record BlockStatement : IStatement
 {
-    private readonly List<IStatement> _statements = statements ?? [];
+    private readonly List<IStatement> _statements;
+
+    public BlockStatement(List<IStatement>? statementList = null)
+    {
+        _statements = statementList ?? [];
+    }
 
     public IEnumerable<IStatement> Statements => _statements.AsReadOnly();
 

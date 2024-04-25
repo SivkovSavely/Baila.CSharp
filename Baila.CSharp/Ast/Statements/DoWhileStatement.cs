@@ -4,13 +4,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class DoWhileStatement(
-    IExpression condition,
-    IStatement body)
-    : IStatement
+public record DoWhileStatement(IExpression Condition, IStatement Body) : IStatement
 {
-    public IExpression Condition { get; } = condition;
-    public IStatement Body { get; } = body;
 
     public void Execute()
     {

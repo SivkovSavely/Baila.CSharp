@@ -7,12 +7,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class VariableDefineStatement(string name, BailaType? type, IExpression? valueExpression) : IStatement
+public record VariableDefineStatement(string Name, BailaType? Type, IExpression? ValueExpression) : IStatement
 {
-    public string Name { get; } = name;
-    public BailaType? Type { get; } = type;
-    public IExpression? ValueExpression { get; } = valueExpression;
-
     public void Execute()
     {
         BailaType variableType, valueType;

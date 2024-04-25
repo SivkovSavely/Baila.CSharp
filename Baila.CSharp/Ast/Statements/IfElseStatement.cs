@@ -3,15 +3,12 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Statements;
 
-public class IfElseStatement(
-    IExpression condition,
-    IStatement trueStatement,
-    IStatement? falseStatement)
+public record IfElseStatement(
+    IExpression Condition,
+    IStatement TrueStatement,
+    IStatement? FalseStatement)
     : IStatement
 {
-    public IExpression Condition { get; } = condition;
-    public IStatement TrueStatement { get; } = trueStatement;
-    public IStatement? FalseStatement { get; } = falseStatement;
 
     public void Execute()
     {

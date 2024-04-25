@@ -5,7 +5,7 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class PrefixUnaryExpression(PrefixUnaryExpression.Operation op, IExpression operandExpression) : IExpression
+public record PrefixUnaryExpression(PrefixUnaryExpression.Operation Op, IExpression OperandExpression) : IExpression
 {
     public readonly record struct Operation(string Op)
     {
@@ -37,9 +37,6 @@ public class PrefixUnaryExpression(PrefixUnaryExpression.Operation op, IExpressi
         [Operator.IntBitwiseNegation] = op => new IntValue(~op.GetAsInteger()),
         [Operator.BoolLogicalNegation] = op => new BooleanValue(!op.GetAsBoolean()),
     };
-
-    public PrefixUnaryExpression.Operation Op { get; } = op;
-    public IExpression OperandExpression { get; } = operandExpression;
 
     public BailaType? GetBailaType()
     {

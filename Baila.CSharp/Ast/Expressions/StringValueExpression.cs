@@ -5,10 +5,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class StringValueExpression(string value) : IExpression
+public record StringValueExpression(string Value) : IExpression
 {
-    public string Value { get; } = value;
-
     public BailaType GetBailaType() => BailaType.String;
 
     public IValue Evaluate()

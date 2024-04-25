@@ -5,10 +5,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class VariableExpression(string name) : IExpression
+public record VariableExpression(string Name) : IExpression
 {
-    public string Name { get; } = name;
-
     public string Stringify()
     {
         return Name;

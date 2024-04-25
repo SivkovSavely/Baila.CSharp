@@ -5,11 +5,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class AssignmentExpression(string target, IExpression expression) : IExpression
+public record AssignmentExpression(string Target, IExpression Expression) : IExpression
 {
-    public string Target { get; } = target;
-    public IExpression Expression { get; } = expression;
-
     public BailaType? GetBailaType()
     {
         return Expression.GetBailaType();

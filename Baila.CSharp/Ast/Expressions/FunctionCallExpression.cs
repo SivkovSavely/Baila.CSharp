@@ -8,11 +8,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class FunctionCallExpression(IExpression functionHolder, List<IExpression> callArgs) : IExpression
+public record FunctionCallExpression(IExpression FunctionHolder, List<IExpression> CallArgs) : IExpression
 {
-    public IExpression FunctionHolder { get; } = functionHolder;
-    public List<IExpression> CallArgs { get; } = callArgs;
-
     public BailaType? GetBailaType()
     {
         return null;

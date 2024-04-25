@@ -6,9 +6,8 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public class TypeOfExpression(IExpression expression) : IExpression
+public record TypeOfExpression(IExpression Expression) : IExpression
 {
-    public IExpression Expression { get; } = expression;
     public BailaType? GetBailaType()
     {
         return Expression.GetBailaType();

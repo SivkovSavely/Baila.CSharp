@@ -11,12 +11,6 @@ public class TestsBase
 {
     protected TestsBase(ITestOutputHelper testOutputHelper)
     {
-        var test = testOutputHelper.GetType()
-            .GetField("test", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(testOutputHelper)! as ITest;
-
-        testOutputHelper.WriteLine($"Reset nametable in {test!.DisplayName}");
-        
         NameTable.CurrentScope = new NameTable.Scope();
     }
     

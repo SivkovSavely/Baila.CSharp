@@ -55,10 +55,22 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
         public static readonly Operator IntIntEquality = Add(new Operator(Operation.Equality, BailaType.Int, BailaType.Int, BailaType.Bool));
         public static readonly Operator IntIntInequality = Add(new Operator(Operation.Inequality, BailaType.Int, BailaType.Int, BailaType.Bool));
 
+        public static readonly Operator AnyNumberAddition = Add(new Operator(Operation.Addition, BailaType.Number, BailaType.Number, BailaType.Number));
+        public static readonly Operator AnyNumberSubtraction = Add(new Operator(Operation.Subtraction, BailaType.Number, BailaType.Number, BailaType.Number));
+        public static readonly Operator AnyNumberMultiplication = Add(new Operator(Operation.Multiplication, BailaType.Number, BailaType.Number, BailaType.Number));
+        public static readonly Operator AnyNumberIntegerDivision = Add(new Operator(Operation.IntegerDivision, BailaType.Number, BailaType.Number, BailaType.Int));
+        public static readonly Operator AnyNumberFloatDivision = Add(new Operator(Operation.FloatDivision, BailaType.Number, BailaType.Number, BailaType.Number));
+        public static readonly Operator AnyNumberLessThan = Add(new Operator(Operation.LessThan, BailaType.Number, BailaType.Number, BailaType.Bool));
+        public static readonly Operator AnyNumberLessThanOrEqual = Add(new Operator(Operation.LessThanOrEqual, BailaType.Number, BailaType.Number, BailaType.Bool));
+        public static readonly Operator AnyNumberGreaterThan = Add(new Operator(Operation.GreaterThan, BailaType.Number, BailaType.Number, BailaType.Bool));
+        public static readonly Operator AnyNumberGreaterThanOrEqual = Add(new Operator(Operation.GreaterThanOrEqual, BailaType.Number, BailaType.Number, BailaType.Bool));
+        public static readonly Operator AnyNumberEquality = Add(new Operator(Operation.Equality, BailaType.Number, BailaType.Number, BailaType.Bool));
+        public static readonly Operator AnyNumberInequality = Add(new Operator(Operation.Inequality, BailaType.Number, BailaType.Number, BailaType.Bool));
+
         private static Operator Add(Operator op) { All.Add(op); return op; }
     }
     
-    private static readonly Dictionary<Operator, Func<IValue, IValue, IValue>> BinaryOperators = new()
+    internal static readonly Dictionary<Operator, Func<IValue, IValue, IValue>> BinaryOperators = new()
     {
         [Operator.IntIntAddition] =
             (left, right) => new IntValue(left.GetAsInteger() + right.GetAsInteger()),
@@ -82,16 +94,36 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
             (left, right) => new BooleanValue(left.GetAsInteger() == right.GetAsInteger()),
         [Operator.IntIntInequality] =
             (left, right) => new BooleanValue(left.GetAsInteger() != right.GetAsInteger()),
+        [Operator.AnyNumberAddition] =
+            (left, right) => new FloatValue(left.GetAsFloat() + right.GetAsFloat()),
+        [Operator.AnyNumberSubtraction] =
+            (left, right) => new FloatValue(left.GetAsFloat() - right.GetAsFloat()),
+        [Operator.AnyNumberMultiplication] =
+            (left, right) => new FloatValue(left.GetAsFloat() * right.GetAsFloat()),
+        [Operator.AnyNumberIntegerDivision] =
+            (left, right) => new IntValue((int)(left.GetAsFloat() / right.GetAsFloat())),
+        [Operator.AnyNumberFloatDivision] =
+            (left, right) => new FloatValue(left.GetAsFloat() / right.GetAsFloat()),
+        [Operator.AnyNumberLessThan] =
+            (left, right) => new BooleanValue(left.GetAsFloat() < right.GetAsFloat()),
+        [Operator.AnyNumberLessThanOrEqual] =
+            (left, right) => new BooleanValue(left.GetAsFloat() <= right.GetAsFloat()),
+        [Operator.AnyNumberGreaterThan] =
+            (left, right) => new BooleanValue(left.GetAsFloat() > right.GetAsFloat()),
+        [Operator.AnyNumberGreaterThanOrEqual] =
+            (left, right) => new BooleanValue(left.GetAsFloat() >= right.GetAsFloat()),
+        [Operator.AnyNumberEquality] =
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            (left, right) => new BooleanValue(left.GetAsFloat() == right.GetAsFloat()),
+        [Operator.AnyNumberInequality] =
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            (left, right) => new BooleanValue(left.GetAsFloat() != right.GetAsFloat()),
     };
 
-    public BailaType? GetBailaType()
+    public BailaType GetBailaType()
     {
-        var op = Operator.All.FirstOrDefault(op =>
-            BinaryOperation == op.Operation &&
-            op.LeftType == Left.GetBailaType() &&
-            op.RightType == Right.GetBailaType());
-
-        return op?.ResultType;
+        var (op, _) = GetOperator(this);
+        return op.ResultType;
     }
 
     public IValue Evaluate()
@@ -118,10 +150,13 @@ public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpr
     
     private (Operator op, Func<IValue, IValue, IValue> callback) GetOperator(BinaryExpression expression)
     {
-        var (op, callback) = BinaryOperators.FirstOrDefault(op =>
-            op.Key.Operation == expression.BinaryOperation &&
-            op.Key.LeftType == expression.Left.GetBailaType() &&
-            op.Key.RightType == expression.Right.GetBailaType());
+        var (op, callback) = BinaryOperators.FirstOrDefault(operatorCallbackPair =>
+        {
+            var (op, _) = operatorCallbackPair;
+            return op.Operation == expression.BinaryOperation &&
+                   expression.Left.GetBailaType()!.IsImplicitlyConvertibleTo(op.LeftType) &&
+                   expression.Right.GetBailaType()!.IsImplicitlyConvertibleTo(op.RightType);
+        });
 
         if (op is null)
         {

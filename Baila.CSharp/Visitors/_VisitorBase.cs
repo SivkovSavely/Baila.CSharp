@@ -22,6 +22,10 @@ public abstract class VisitorBase
     {
     }
 
+    public virtual void VisitFloatValueExpression(FloatValueExpression expr)
+    {
+    }
+
     public virtual void VisitFunctionCallExpression(FunctionCallExpression expr)
     {
         expr.FunctionHolder.AcceptVisitor(this);

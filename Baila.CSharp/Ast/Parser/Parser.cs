@@ -1,5 +1,6 @@
 ﻿// #define PARSER_TRACE_ENABLED
 
+using System.Globalization;
 using System.Text;
 using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
@@ -739,7 +740,9 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             result = suffix switch
             {
                 'c' => throw new NotImplementedException("Char number literals are not implemented yet"),
-                _ => new IntValueExpression(int.Parse(number))
+                _ when long.TryParse(number, CultureInfo.InvariantCulture, out var intNumber) => new IntValueExpression(intNumber),
+                _ when double.TryParse(number, CultureInfo.InvariantCulture, out var floatNumber) => new FloatValueExpression(floatNumber),
+                _ => throw new Exception($"Could not infer type of the number: '{number}'")
             };
         }
         // Strings

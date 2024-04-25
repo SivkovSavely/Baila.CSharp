@@ -4,6 +4,7 @@ using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
+using FluentAssertions.Formatting;
 using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests.Infrastructure;
@@ -16,6 +17,7 @@ public class TestsBase
     protected TestsBase(ITestOutputHelper testOutputHelper)
     {
         NameTable.CurrentScope = new NameTable.Scope();
+        Formatter.AddFormatter(new ToStringFormatter());
     }
 
     static TestsBase()
@@ -77,5 +79,20 @@ public class TestsBase
     protected static BailaType GetBailaTypeByName(string typeName)
     {
         return BuiltInBailaTypes.FirstOrDefault(f => f.Name == typeName)?.GetValue(null) as BailaType ?? new BailaType(typeName);
+    }
+}
+
+file class ToStringFormatter : IValueFormatter
+{
+    public bool CanHandle(object? value)
+    {
+        // You can add additional logic here to only handle specific types
+        return value is not null; 
+    }
+
+    public void Format(object value, FormattedObjectGraph formattedGraph, FormattingContext context, FormatChild formatChild)
+    {
+        // Use the object's ToString method for formatting
+        formattedGraph.AddFragment(value.ToString());
     }
 }

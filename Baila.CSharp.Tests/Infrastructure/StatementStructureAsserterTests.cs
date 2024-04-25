@@ -172,7 +172,7 @@ public class StatementStructureAsserterTests : TestsBase
     {
         var ast = new Statements();
         ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new NoOpStatement());
+        ast.AddStatement(new ReturnStatement());
         ast.AddStatement(new WhileStatement(null!, null!));
 
         AssertAst(
@@ -180,7 +180,7 @@ public class StatementStructureAsserterTests : TestsBase
             a =>
             {
                 a.AssertRootStmt<IfElseStatement>(_ => { });
-                a.AssertRootStmt<NoOpStatement>(_ => { });
+                a.AssertRootStmt<ReturnStatement>(_ => { });
                 a.AssertRootStmt<WhileStatement>(_ => { });
             });
     }
@@ -190,7 +190,7 @@ public class StatementStructureAsserterTests : TestsBase
     {
         var ast = new Statements();
         ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new NoOpStatement());
+        ast.AddStatement(new ReturnStatement());
         ast.AddStatement(new WhileStatement(null!, null!));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
@@ -200,10 +200,10 @@ public class StatementStructureAsserterTests : TestsBase
                 a =>
                 {
                     a.AssertRootStmt<IfElseStatement>(_ => { });
-                    a.AssertRootStmt<NoOpStatement>(_ => { });
+                    a.AssertRootStmt<ReturnStatement>(_ => { });
                 });
         });
-        Assert.Equal("There are 1 more unasserted statements.", exception.Message);
+        Assert.Equal("There are 1 more unasserted statements:", exception.Message.Split("\n").First());
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class StatementStructureAsserterTests : TestsBase
     {
         var ast = new Statements();
         ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new NoOpStatement());
+        ast.AddStatement(new ReturnStatement());
         ast.AddStatement(new WhileStatement(null!, null!));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
@@ -221,12 +221,12 @@ public class StatementStructureAsserterTests : TestsBase
                 a =>
                 {
                     a.AssertRootStmt<IfElseStatement>(_ => { });
-                    a.AssertRootStmt<NoOpStatement>(_ => { });
+                    a.AssertRootStmt<ReturnStatement>(_ => { });
                     a.AssertRootStmt<WhileStatement>(_ => { });
-                    a.AssertRootStmt<NoOpStatement>(_ => { });
+                    a.AssertRootStmt<ReturnStatement>(_ => { });
                 });
         });
-        Assert.Equal("Extra statement was asserted: NoOpStatement", exception.Message);
+        Assert.Equal("Extra statement was asserted: ReturnStatement", exception.Message);
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public class StatementStructureAsserterTests : TestsBase
                                 []
                             )
                         ),
-                        new NoOpStatement(),
+                        new ReturnStatement(),
                         new WhileStatement(null!, null!)
                     }
                 ),
@@ -268,7 +268,7 @@ public class StatementStructureAsserterTests : TestsBase
                             (bs, innerAsserter) =>
                             {
                                 innerAsserter.AssertRootExprStmt<FunctionCallExpression>();
-                                innerAsserter.AssertRootStmt<NoOpStatement>();
+                                innerAsserter.AssertRootStmt<ReturnStatement>();
                                 innerAsserter.AssertRootStmt<WhileStatement>();
                             });
                         Assert.Null(stmt.FalseStatement);

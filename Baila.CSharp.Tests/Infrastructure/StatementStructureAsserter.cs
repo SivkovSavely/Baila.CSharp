@@ -9,7 +9,7 @@ public class StatementStructureAsserter(IEnumerable<IStatement> statements) : ID
     // This field is incremented on each Assert call.
     int _currentStatement;
     // The Statements object that is currently being asserted is passed in there too.
-    readonly IStatement[] _currentStatements = statements.ToArray();
+    readonly IStatement[] _currentStatements = statements.Where(x => x is not NoOpStatement).ToArray();
 
     /// <summary>
     /// Asserts that the Nth statement in the AST is of type TStmt. Also runs assertInner to assert inner structure of the statement.
@@ -87,7 +87,9 @@ public class StatementStructureAsserter(IEnumerable<IStatement> statements) : ID
 
         if (_currentStatement < _currentStatements.Length)
         {
-            Assert.Fail($"There are {_currentStatements.Length - _currentStatement} more unasserted statements.");
+            var unassertedStatements = _currentStatements.Skip(_currentStatement).Select(s => s.ToString());
+            Assert.Fail(
+                $"There are {_currentStatements.Length - _currentStatement} more unasserted statements:\n{string.Join("\n", unassertedStatements)}");
         }
     }
 }

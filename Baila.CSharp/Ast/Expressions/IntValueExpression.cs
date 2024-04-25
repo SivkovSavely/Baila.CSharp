@@ -5,7 +5,7 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Expressions;
 
-public record IntValueExpression(int Value) : IExpression
+public record IntValueExpression(long Value) : IExpression
 {
     public BailaType GetBailaType() => BailaType.Int;
 

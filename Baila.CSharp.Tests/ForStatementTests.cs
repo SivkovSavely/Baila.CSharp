@@ -18,14 +18,40 @@ public class ForStatementTests : TestsBase
     {
     }
 
-    [Fact]
-    public void TestParsing()
+    [Theory]
+    [InlineData("""
+                for i = 1 to 3 {
+                   body();
+                }
+                """)]
+    [InlineData("""
+                for i=1 to 3{
+                   body();
+                }
+                """)]
+    [InlineData("""
+                for i = 1 to 3 {
+                   body(); }
+                """)]
+    [InlineData("for i = 1 to 3 { body(); }")]
+    [InlineData("""
+                for i = 1 to 3
+                { body(); }
+                """)]
+    [InlineData("""
+                for i = 1 to 3
+                {
+                    body(); }
+                """)]
+    [InlineData("""
+                for i = 1 to 3
+                {
+                    body();
+                }
+                """)]
+    public void TestParsing(string source)
     {
-        var program = CompileProgram("""
-                                     for i = 1 to 3 {
-                                        body();
-                                     }
-                                     """);
+        var program = CompileProgram(source);
 
         AssertAst(
             program,

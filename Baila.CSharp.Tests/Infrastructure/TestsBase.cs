@@ -3,6 +3,7 @@ using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Typing;
 using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests.Infrastructure;
@@ -10,11 +11,21 @@ namespace Baila.CSharp.Tests.Infrastructure;
 [Collection("TestsBase")]
 public class TestsBase
 {
+    protected static readonly FieldInfo[] BuiltInBailaTypes;
+
     protected TestsBase(ITestOutputHelper testOutputHelper)
     {
         NameTable.CurrentScope = new NameTable.Scope();
     }
-    
+
+    static TestsBase()
+    {
+        BuiltInBailaTypes = typeof(BailaType)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.FieldType == typeof(BailaType))
+            .ToArray();
+    }
+
     protected static Statements CompileProgram(string source, string filename = "test.baila")
     {
         return Repl.Interpreter.Compile(source, filename);
@@ -61,5 +72,10 @@ public class TestsBase
     protected static bool IsStmtFunctionCall(IStatement stmt, string name)
     {
         return stmt is ExpressionStatement exprStmt && IsExprFunctionCall(exprStmt.Expression, name);
+    }
+
+    protected static BailaType GetBailaTypeByName(string typeName)
+    {
+        return BuiltInBailaTypes.FirstOrDefault(f => f.Name == typeName)?.GetValue(null) as BailaType ?? new BailaType(typeName);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
@@ -109,7 +110,6 @@ public class NameTable
 
     static NameTable()
     {
-        CurrentScope.AddVariableInferred("test", new IntValue(123));
         CurrentScope.AddVariableInferred("print", FunctionValue.WithOverloads(
             overloads: [
                 new FunctionOverload(
@@ -120,6 +120,21 @@ public class NameTable
                     null),
             ],
             name: "print"));
+        CurrentScope.AddVariableInferred("input", FunctionValue.WithOverloads(
+            overloads: [
+                new FunctionOverload(
+                    args =>
+                    {
+                        var prompt = args.ArgsByIndex.FirstOrDefault()?.GetAsString() ?? "";
+                        Console.Write(prompt);
+                        return new StringValue(Console.ReadLine() ?? "");
+                    },
+                    [
+                        new FunctionParameter("prompt", BailaType.String, new StringValueExpression(""))
+                    ],
+                    BailaType.String),
+            ],
+            name: "input"));
         CurrentScope.AddVariableInferred("sum", FunctionValue.WithOverloads(
             overloads:
             [

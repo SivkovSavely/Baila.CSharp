@@ -1,52 +1,10 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
-using Baila.CSharp.Lexer;
-using Baila.CSharp.Parser;
-using Baila.CSharp.Runtime.Values.Abstractions;
-using Baila.CSharp.Visitors;
-
-IValue? Evaluate(string sourceCode, string filename, bool showTokens = false, bool showAst = false)
-{
-    var lexer = new Lexer(sourceCode, filename);
-    var tokens = lexer.Tokenize();
-    
-#if DEBUG
-    if (showTokens)
-    {
-        Console.WriteLine("TOKENS:");
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        foreach (var token in tokens)
-        {
-            Console.WriteLine($"  {token}");
-        }
-
-        Console.ResetColor();
-    }
-#endif
-    
-    var parser = new Parser(tokens);
-    var ast = parser.BuildAst();
-    
-    new FunctionDefiningVisitor().VisitStatements(ast);
-    
-#if DEBUG
-    if (showAst)
-    {
-        Console.WriteLine("PROGRAM AST:");
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.WriteLine($"  {ast}");
-        Console.ResetColor();
-    }
-#endif
-    
-    ast.Execute();
-
-    return ast.LastEvaluatedValue;
-}
+using Baila.CSharp.Repl;
 
 if (args.Length > 0)
 {
     var filename = args[0];
-    Evaluate(File.ReadAllText(filename), filename);
+    Interpreter.Evaluate(File.ReadAllText(filename), filename);
     return;
 }
 
@@ -84,7 +42,7 @@ while (true)
             }
         }
 
-        var lastEvaluatedValue = Evaluate(source, "<REPL>");
+        var lastEvaluatedValue = Interpreter.Evaluate(source, "<REPL>");
 
         if (lastEvaluatedValue != null)
         {

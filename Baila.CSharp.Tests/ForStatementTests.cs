@@ -1,21 +1,21 @@
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
 public class ForStatementTests : TestsBase
 {
-    public ForStatementTests()
+    public ForStatementTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        NameTable.CurrentScope = new NameTable.Scope(); // clear scope
     }
 
     [Fact]
     public void X()
     {
         var program = CompileProgram("""
-                                  for i = 1 to 3 {}
-                                  """);
+                                     for i = 1 to 3 {}
+                                     """);
 
         Assert.False(NameTable.Exists("i"), "Loop counter should not exist at this point in time");
         program.Execute();

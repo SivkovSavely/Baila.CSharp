@@ -1,9 +1,14 @@
 using Baila.CSharp.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
 public class FunctionDefinitionTests : TestsBase
 {
+    public FunctionDefinitionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
+    }
+
     [Fact]
     public void BraceOnOtherLine_ShouldParse()
     {

@@ -5,8 +5,15 @@ using Xunit.Sdk;
 
 namespace Baila.CSharp.Tests;
 
-public class LexerTests(ITestOutputHelper testOutputHelper) : TestsBase
+public class LexerTests : TestsBase
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public LexerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     public void SimpleProgramTest()
     {
@@ -311,10 +318,10 @@ public class LexerTests(ITestOutputHelper testOutputHelper) : TestsBase
 
     private void PrintTokens(List<Token> tokens)
     {
-        testOutputHelper.WriteLine("Tokens:");
+        _testOutputHelper.WriteLine("Tokens:");
         foreach (var token in tokens)
         {
-            testOutputHelper.WriteLine($"  {token}");
+            _testOutputHelper.WriteLine($"  {token}");
         }
     }
 }

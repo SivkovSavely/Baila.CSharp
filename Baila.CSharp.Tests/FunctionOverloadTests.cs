@@ -1,18 +1,23 @@
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
 public class FunctionOverloadTests : TestsBase
 {
-    public FunctionOverloadTests()
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public FunctionOverloadTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        NameTable.CurrentScope = new NameTable.Scope();
+        _testOutputHelper = testOutputHelper;
+        testOutputHelper.WriteLine("Run ctor in FunctionOverloadTests");
     }
-    
+
     [Fact]
     public void FunctionWithOneOverload_CallSuccessful()
     {
+        _testOutputHelper.WriteLine("Run test FunctionWithOneOverload_CallSuccessful");
         RunProgram("""
                    function testFunc(x: Int) : Int
                    {

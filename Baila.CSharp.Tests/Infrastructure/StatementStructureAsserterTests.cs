@@ -1,11 +1,16 @@
 ﻿using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Statements;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Baila.CSharp.Tests.Infrastructure;
 
 public class StatementStructureAsserterTests : TestsBase
 {
+    public StatementStructureAsserterTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
+    }
+
     [Fact]
     public void CorrectAssertion_AssertsCorrectly()
     {

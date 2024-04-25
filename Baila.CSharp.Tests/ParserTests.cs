@@ -1,16 +1,21 @@
 using Baila.CSharp.Ast.Statements;
 using Baila.CSharp.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
 public class ParserTests : TestsBase
 {
+    public ParserTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
+    }
+
     [Fact]
     public void IfElseStatementTest_TrueBranchOnly_EmptyTrueBranch()
     {
         var statements = CompileProgram("""
-                                    if expr {}
-                                    """);
+                                        if expr {}
+                                        """);
         var statement = statements.StatementList.First();
 
         var ifElseStatement = Assert.IsType<IfElseStatement>(statement);
@@ -23,8 +28,8 @@ public class ParserTests : TestsBase
     public void IfElseStatementTest_TrueBranchAndFalseBranch_EmptyBranches()
     {
         var statements = CompileProgram("""
-                                    if expr {} else {}
-                                    """);
+                                        if expr {} else {}
+                                        """);
         var statement = statements.StatementList.First();
 
         var ifElseStatement = Assert.IsType<IfElseStatement>(statement);

@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Baila.CSharp.Repl\Baila.CSharp.Repl.csproj" />
       <ProjectReference Include="..\Baila.CSharp\Baila.CSharp.csproj" />
     </ItemGroup>
 

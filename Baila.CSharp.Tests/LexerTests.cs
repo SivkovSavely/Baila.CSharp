@@ -293,7 +293,7 @@ public class LexerTests : TestsBase
                 Assert.Fail($"Expected token '{token.Type.Type}' to have value '{value}', found '{token.Value}'");
             }
         }
-        catch (XunitException e)
+        catch (XunitException)
         {
             PrintTokens(tokens);
             throw;
@@ -309,7 +309,7 @@ public class LexerTests : TestsBase
                 Assert.Fail($"Expected to have no more tokens, found token {tokens[i]}");
             }
         }
-        catch (XunitException e)
+        catch (XunitException)
         {
             PrintTokens(tokens);
             throw;

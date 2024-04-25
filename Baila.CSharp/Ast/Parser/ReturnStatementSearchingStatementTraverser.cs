@@ -28,7 +28,6 @@ public static class ReturnStatementSearchingStatementTraverser
                 break;
             case FunctionDefineStatement functionDefineStatement:
                 throw new Exception("Unsupported function inside another function");
-                break;
             case IfElseStatement ifElseStatement:
                 list.AddRange(Search(ifElseStatement.TrueStatement));
                 if (ifElseStatement.FalseStatement != null)

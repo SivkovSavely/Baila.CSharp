@@ -40,7 +40,7 @@ public record FunctionCallExpression(IExpression FunctionHolder, List<IExpressio
         var functionValue = (value as FunctionValue)!;
         availableOverloads.AddRange(functionValue.Overloads);
 
-        return new FunctionWithOverloads(availableOverloads).Call(CallArgs); // TODO what to do with void functions?
+        return new FunctionWithOverloads(availableOverloads).Call(CallArgs)!; // TODO what to do with void functions?
     }
 
     public void AcceptVisitor(VisitorBase visitor)

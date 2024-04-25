@@ -38,7 +38,15 @@ public class FunctionWithOverloads(List<FunctionOverload> overloads)
             for (var i = 0; i < overload.Parameters.Count; i++)
             {
                 var parameter = overload.Parameters[i];
-                var value = arguments[i].Evaluate();
+                var value = i < arguments.Count ? arguments[i].Evaluate() : parameter.DefaultValue?.Evaluate();
+
+                if (value == null)
+                {
+                    throw new Exception(
+                        $"Argument for parameter {parameter.Name} is not supplied, " +
+                        "and the parameter doesn't have a default value.");
+                }
+                
                 args.AddArgument(parameter.Name, value);
                 NameTable.AddVariable(parameter.Name, parameter.Type, value);
             }

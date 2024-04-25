@@ -12,7 +12,16 @@ public record FunctionCallExpression(IExpression FunctionHolder, List<IExpressio
 {
     public BailaType? GetBailaType()
     {
-        return null;
+        if (FunctionHolder is VariableExpression variableExpression)
+        {
+            var member = NameTable.Get(variableExpression.Name);
+            var functionValue = member.Value as FunctionValue;
+            var overload = FunctionValue.GetApplicableOverloads(
+                functionValue.Overloads,
+                CallArgs.Select(x => x.GetBailaType()).ToArray());
+            return overload.First().ReturnType;
+        }
+        return FunctionHolder.GetBailaType();
     }
 
     public IValue Evaluate()

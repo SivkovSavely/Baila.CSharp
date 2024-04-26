@@ -1,5 +1,9 @@
+using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Tests.Infrastructure;
+using Baila.CSharp.Typing;
+using FluentAssertions;
 using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
@@ -17,43 +21,129 @@ public class FunctionOverloadTests : TestsBase
     [Fact]
     public void FunctionWithOneOverload_CallSuccessful()
     {
+        var functionsCalled = new List<string>();
+
+        NameTable.AddConstant(
+            "testFuncWithOneInt",
+            FunctionValue.WithOverload(
+                new FunctionOverload(args => { functionsCalled.Add("testFuncWithOneInt"); }, [], null)));
+
         RunProgram("""
                    function testFunc(x: Int) : Int
                    {
+                       testFuncWithOneInt()
                    }
 
                    testFunc(123)
                    """);
+
+        functionsCalled.Should().Equal("testFuncWithOneInt");
     }
 
     [Fact]
     public void FunctionWithOneOverload_OverloadResolutionSuccessfulForSupertypeParameter()
     {
+        var functionsCalled = new List<string>();
+
+        NameTable.AddConstant(
+            "testFuncWithOneNumber",
+            FunctionValue.WithOverload(
+                new FunctionOverload(args => { functionsCalled.Add("testFuncWithOneNumber"); }, [], null)));
+
         RunProgram("""
                    function testFunc(x: Number) : Int
                    {
+                       testFuncWithOneNumber()
                    }
 
                    var reallyAnInt: Int = 123
                    testFunc(reallyAnInt)
                    """);
+
+        functionsCalled.Should().Equal("testFuncWithOneNumber");
     }
 
     [Fact]
     public void FunctionWithTwoOverloads_DifferByParameterCount_CallSuccessful()
     {
+        var functionsCalled = new List<string>();
+
+        NameTable.AddConstant(
+            "testFuncWithOneInt",
+            FunctionValue.WithOverload(
+                new FunctionOverload(args => { functionsCalled.Add("testFuncWithOneInt"); }, [], null)));
+
+        NameTable.AddConstant(
+            "testFuncWithTwoInts",
+            FunctionValue.WithOverload(
+                new FunctionOverload(args => { functionsCalled.Add("testFuncWithTwoInts"); }, [], null)));
+
         RunProgram("""
                    function testFunc(x: Int) : Int
                    {
-                     return x
+                     return testFuncWithOneInt()
                    }
                    function testFunc(x: Int, y: Int) : Int
                    {
-                     return y
+                     return testFuncWithTwoInts()
                    }
 
                    testFunc(123)
                    testFunc(123, 456)
                    """);
+
+        functionsCalled.Should().Equal("testFuncWithOneInt", "testFuncWithTwoInts");
+    }
+
+    [Fact]
+    public void FunctionWithOneOverload_DefaultParameter_CallSuccessful()
+    {
+        var numbers = new List<long>();
+
+        NameTable.AddConstant(
+            "notifyTestAboutNumber",
+            FunctionValue.WithOverload(
+                new FunctionOverload(args => { numbers.Add(args.GetInteger(0)); }, [new FunctionParameter("number", BailaType.Int)], null)));
+
+        RunProgram("""
+                   function testFunc(x: Int = 5) : Int
+                   {
+                       notifyTestAboutNumber(x)
+                   }
+
+                   testFunc()
+                   testFunc(123)
+                   """);
+
+        numbers.Should().Equal(5, 123);
+    }
+
+    [Fact]
+    public void FunctionWithOneOverload_RequiredParameterAfterOptionalParameter_CompileError()
+    {
+        CompileProgramAndAssertError<Exception>(
+            """
+            function testFunc(x: Int = 5, y: Int) : Int
+            {
+            }
+            """,
+            optionalMessage:
+            "In function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+    }
+
+    [Fact]
+    public void FunctionWithTwoOverloads_RequiredParameterAfterOptionalParameter_CompileError()
+    {
+        CompileProgramAndAssertError<Exception>(
+            """
+            function testFunc() : Int
+            {
+            }
+            function testFunc(x: Int = 5, y: Int) : Int
+            {
+            }
+            """,
+            optionalMessage:
+            "In function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
     }
 }

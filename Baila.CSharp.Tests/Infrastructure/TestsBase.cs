@@ -40,6 +40,16 @@ public class TestsBase
         return program.LastEvaluatedValue;
     }
 
+    protected static void CompileProgramAndAssertError<TError>(string source, string? optionalMessage = null, string filename = "test.baila")
+        where TError : Exception
+    {
+        var exception = Assert.Throws<TError>(() => CompileProgram(source, filename));
+        if (optionalMessage != null)
+        {
+            Assert.Equal(optionalMessage, exception.Message);
+        }
+    }
+
     protected static void RunProgramAndAssertError<TError>(Statements program, string? optionalMessage = null)
         where TError : Exception
     {

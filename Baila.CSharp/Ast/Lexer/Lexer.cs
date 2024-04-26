@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Baila.CSharp.Ast.Diagnostics;
 
 namespace Baila.CSharp.Lexer;
 
@@ -8,9 +9,15 @@ public class Lexer(
     LexerMode mode = LexerMode.Regular,
     CancellationToken? cancellationToken = null)
 {
-    private readonly Cursor _cursor = new(0, 1, 1, filename);
+    private int _position = 0;
+    private int _column = 1;
+    private int _line = 1;
+    private string _filename = filename;
     private readonly List<Token> _tokens = [];
     private readonly StringBuilder _buffer = new(256);
+    private readonly List<LexerDiagnostic> _diagnostics = [];
+    private readonly string _source = source.Replace("\r\n", "\n");
+    private readonly string[] _lines = source.Replace("\r\n", "\n").Split("\n").ToArray();
 
     private readonly char[] _operatorChars = "+-*/%=!~&|^~?:;<>.,".ToCharArray();
     private readonly char[] _valueOperatorChars = "+-*!~?<".ToCharArray();
@@ -146,7 +153,9 @@ public class Lexer(
         ["as"] = TokenType.As,
     };
 
-    private bool HasChars() => _cursor.Position < source.Length;
+    private bool HasChars() => _position < _source.Length;
+
+    public IEnumerable<LexerDiagnostic> Diagnostics => _diagnostics.AsReadOnly();
 
     public List<Token> Tokenize()
     {
@@ -391,7 +400,8 @@ public class Lexer(
                 }
                 else if (_buffer.ToString().Contains('.') && IsDigit(Peek(1)))
                 {
-                    throw new Exception($"Syntax error: encountered second decimal point in a number literal in {_cursor.Line}:{_cursor.Column}");
+                    AddDiagnostic(LexerDiagnostics.BL0001_SecondDecimalPoint);
+                    break;
                 }
                 else if (!IsDigit(Peek(1)))
                 {
@@ -479,7 +489,7 @@ public class Lexer(
         var isInterpolated = false;
         var isTokenizingSimpleIdentifierInterpolation = false;
         List<Token>? interpolatedStringTokens = null;
-        while (HasChars())
+        while (true)
         {
             if (isTokenizingSimpleIdentifierInterpolation)
             {
@@ -488,10 +498,10 @@ public class Lexer(
                     isTokenizingSimpleIdentifierInterpolation = false;
                     if (interpolatedStringTokens!.Count != 0)
                     {
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
                     }
                     interpolatedStringTokens.Add(
-                        new Token(_cursor.Clone(), TokenType.Identifier, _buffer.ToString()));
+                        new Token(CreateCursor(), TokenType.Identifier, _buffer.ToString()));
                     _buffer.Clear();
                     continue;
                 }
@@ -513,11 +523,11 @@ public class Lexer(
                     {
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
                         }
                         interpolatedStringTokens.Add(
                             new Token(
-                                _cursor.Clone(),
+                                CreateCursor(),
                                 mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
                                     ? quoteChar == '\''
                                         ? TokenType.SingleQuoteStringLiteral
@@ -537,10 +547,10 @@ public class Lexer(
                     {
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
                         }
                         interpolatedStringTokens.Add(
-                            new Token(_cursor.Clone(), TokenType.StringLiteral, _buffer.ToString()));
+                            new Token(CreateCursor(), TokenType.StringLiteral, _buffer.ToString()));
                         _buffer.Clear();
                     }
 
@@ -552,29 +562,31 @@ public class Lexer(
                     {
                         if (_buffer.Length == 0)
                         {
-                            throw new Exception($"Syntax error: empty interpolated string expression in {_cursor.Line}:{_cursor.Column}");
+                            AddDiagnostic(LexerDiagnostics.BL0002_EmptyInterpolatedStringExpression, columnOffset: -1);
+                            break;
                         }
 
                         if (interpolatedStringTokens == null)
                         {
-                            throw new Exception($"Syntax error: unexpected string expression closing brace in {_cursor.Line}:{_cursor.Column}");
+                            AddDiagnostic(LexerDiagnostics.BL0003_UnexpectedStringInterpolationExpressionClosingBrace);
+                            break;
                         }
 
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
                         }
 
                         var lexer = new Lexer(
                             _buffer.ToString(),
-                            _cursor.Filename,
+                            _filename,
                             mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
                                 ? LexerMode.HighlightingInterpolatedString
                                 : LexerMode.InterpolatedString);
                         var expressionTokens = lexer.Tokenize();
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.LeftParen));
+                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.LeftParen));
                         interpolatedStringTokens.AddRange(expressionTokens);
-                        interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.RightParen));
+                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.RightParen));
                         _buffer.Clear();
                     }
 
@@ -611,7 +623,8 @@ public class Lexer(
                             _buffer.Append(mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString ? @"\0" : '\0');
                             break;
                         default:
-                            throw new Exception($"Unrecognized escape sequence: \\{currentChar} in {_cursor.Line}:{_cursor.Column}");
+                            AddDiagnostic(LexerDiagnostics.BL0004_UnrecognizedStringEscapeSequence, currentChar);
+                            break;
                     }
 
                     currentChar = Next();
@@ -621,13 +634,19 @@ public class Lexer(
             if (currentChar == quoteChar && unclosedCurlies == 0)
                 break;
             if (currentChar == '\0')
-                throw new Exception($"Unclosed string in {_cursor.Line}:{_cursor.Column}");
+            {
+                AddDiagnostic(LexerDiagnostics.BL0006_UnclosedString);
+                break;
+            }
             _buffer.Append(currentChar);
             currentChar = Next();
         }
 
         if (unclosedCurlies != 0)
-            throw new Exception($"Syntax error: Unbalanced curly brackets inside template string in {_cursor.Line}:{_cursor.Column}");
+        {
+            AddDiagnostic(LexerDiagnostics.BL0005_UnbalancedBracesInsideTemplateString);
+            return;
+        }
 
         Next(); // Skip closing quote
 
@@ -637,11 +656,11 @@ public class Lexer(
             {
                 if (interpolatedStringTokens!.Count != 0)
                 {
-                    interpolatedStringTokens.Add(new Token(_cursor.Clone(), TokenType.Comma));
+                    interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
                 }
                 interpolatedStringTokens.Add(
                     new Token(
-                        _cursor.Clone(),
+                        CreateCursor(),
                         mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
                             ? quoteChar == '"'
                                 ? TokenType.DoubleQuoteStringLiteral
@@ -688,7 +707,10 @@ public class Lexer(
             if (currentChar == '`')
                 break;
             if (currentChar == '\0')
-                throw new Exception($"Unclosed string in {_cursor.Line}:{_cursor.Column}");
+            {
+                AddDiagnostic(LexerDiagnostics.BL0006_UnclosedString);
+                break;
+            }
             _buffer.Append(currentChar);
             currentChar = Next();
         }
@@ -824,7 +846,7 @@ public class Lexer(
 
     private void AddToken(TokenType type, string? value = null)
     {
-        _tokens.Add(new Token(_cursor.Clone(), type, value));
+        _tokens.Add(new Token(CreateCursor(), type, value));
     }
 
     private bool IsIdentifierStart(char ch)
@@ -846,14 +868,14 @@ public class Lexer(
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        _cursor.Position++;
-        _cursor.Column++;
+        _position++;
+        _column++;
 
         if (Current() == '\n')
         {
-            _cursor.Line++;
-            _cursor.Column = 1;
-            // _cursor.Position++; // skip newline
+            _line++;
+            _column = 0;
+            // _position++; // skip newline
         }
 
         return Current();
@@ -868,8 +890,49 @@ public class Lexer(
 
     private char Peek(int relative)
     {
-        var pos = _cursor.Position + relative;
-        return pos < source.Length ? source[pos] : '\0';
+        var pos = _position + relative;
+        return pos < _source.Length ? _source[pos] : '\0';
+    }
+
+    private Cursor CreateCursor(int columnOffset = 0) => new(_position, _column + columnOffset, _line, _filename);
+
+    private string GetLine(int? lineNo = null)
+    {
+        lineNo ??= _line - 1;
+        return _lines[lineNo.Value];
+    }
+
+    private void AddDiagnostic(Func<Cursor, string, LexerDiagnostic> diagnosticCreator, int columnOffset = 0)
+    {
+        var diagnostic = diagnosticCreator(CreateCursor(columnOffset), GetLine());
+        _diagnostics.Add(diagnostic);
+    }
+
+    private void AddDiagnostic<TParam>(
+        Func<TParam, Cursor, string, LexerDiagnostic> diagnosticCreator,
+        TParam param,
+        int columnOffset = 0)
+    {
+        var diagnostic = diagnosticCreator(param, CreateCursor(columnOffset), GetLine());
+        _diagnostics.Add(diagnostic);
+    }
+
+    private void AddDiagnostic<TParam1, TParam2>(
+        Func<TParam1, TParam2, Cursor, string, LexerDiagnostic> diagnosticCreator,
+        TParam1 param1, TParam2 param2,
+        int columnOffset = 0)
+    {
+        var diagnostic = diagnosticCreator(param1, param2, CreateCursor(columnOffset), GetLine());
+        _diagnostics.Add(diagnostic);
+    }
+
+    private void AddDiagnostic<TParam1, TParam2, TParam3>(
+        Func<TParam1, TParam2, TParam3, Cursor, string, LexerDiagnostic> diagnosticCreator,
+        TParam1 param1, TParam2 param2, TParam3 param3,
+        int columnOffset = 0)
+    {
+        var diagnostic = diagnosticCreator(param1, param2, param3, CreateCursor(columnOffset), GetLine());
+        _diagnostics.Add(diagnostic);
     }
 
     private string TraceTokens()
@@ -877,7 +940,7 @@ public class Lexer(
         var sb = new StringBuilder();
 
         var i = 0;
-        foreach (var token in source)
+        foreach (var token in _source + "\0")
         {
             var prettyToken = token switch
             {
@@ -887,7 +950,7 @@ public class Lexer(
                 '\t' => @"[\t]",
                 _ => token.ToString()
             };
-            if (i++ == _cursor.Position)
+            if (i++ == _position)
             {
                 sb.Append(new string('>', 10));
                 sb.Append(' ');

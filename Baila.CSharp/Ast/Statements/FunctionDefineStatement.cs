@@ -40,6 +40,16 @@ public record FunctionDefineStatement(
                     $"Cannot overload variable {Name} of type {value.GetBailaType()} as it is not a function");
             }
 
+            if (FunctionValue.IsRequiredParameterAfterOptionalParameter(
+                    overload,
+                    out var requiredParameter,
+                    out var optionalParameter))
+            {
+                throw new Exception($"In function '{Name}', " +
+                                    $"required parameter '{requiredParameter!.Name}' " +
+                                    $"cannot be after an optional parameter '{optionalParameter!.Name}'");
+            }
+
             if (func.HasOverload(overload))
             {
                 var pars = string.Join(", ", overload.Parameters.Select(x => x.ToString()));

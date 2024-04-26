@@ -12,9 +12,7 @@ public class FunctionValue(string name = "") : IValue
 
     public static FunctionValue WithOverload(FunctionOverload overload, string name = "")
     {
-        var value = new FunctionValue(name);
-        value._overloads.Add(overload);
-        return value;
+        return WithOverloads([overload], name);
     }
 
     public static FunctionValue WithOverloads(List<FunctionOverload> overloads, string name = "")
@@ -22,6 +20,16 @@ public class FunctionValue(string name = "") : IValue
         var value = new FunctionValue(name);
         foreach (var overload in overloads)
         {
+            if (IsRequiredParameterAfterOptionalParameter(
+                    overload,
+                    out var requiredParameter,
+                    out var optionalParameter))
+            {
+                throw new Exception($"In function '{name}', " +
+                                    $"required parameter '{requiredParameter!.Name}' " +
+                                    $"cannot be after an optional parameter '{optionalParameter!.Name}'");
+            }
+
             value._overloads.Add(overload);
         }
         return value;
@@ -104,5 +112,40 @@ public class FunctionValue(string name = "") : IValue
     public override string ToString()
     {
         return $"FunctionValue(Name={name})";
+    }
+
+    public static bool IsRequiredParameterAfterOptionalParameter(
+        FunctionOverload overload,
+        out FunctionParameter? requiredParameter,
+        out FunctionParameter? optionalParameter)
+    {
+        if (overload.Parameters.Count == 0)
+        {
+            requiredParameter = null;
+            optionalParameter = null;
+            return false;
+        }
+
+        var seenOptionalParameter = false;
+        FunctionParameter? firstOptionalParameter = null;
+        foreach (var parameter in overload.Parameters)
+        {
+            if (parameter.DefaultValue == null && seenOptionalParameter)
+            {
+                requiredParameter = parameter;
+                optionalParameter = firstOptionalParameter;
+                return true;
+            }
+
+            if (parameter.DefaultValue != null)
+            {
+                seenOptionalParameter = true;
+                firstOptionalParameter = parameter;
+            }
+        }
+
+        requiredParameter = null;
+        optionalParameter = null;
+        return false;
     }
 }

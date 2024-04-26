@@ -169,4 +169,6 @@ public record TokenType(
     
     // private tokens: these are reserved for internal language use and are not able to be lexed from source code
     public static readonly TokenType PrivateStringConcat = new("[[string_concat]]");
+    public static readonly TokenType PrivateStringConcatStart = new("[[string_concat_start]]");
+    public static readonly TokenType PrivateStringConcatEnd = new("[[string_concat_end]]");
 }

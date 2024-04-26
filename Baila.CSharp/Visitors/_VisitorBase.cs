@@ -44,6 +44,10 @@ public abstract class VisitorBase
         expr.OperandExpression.AcceptVisitor(this);
     }
 
+    public virtual void VisitStringConcatExpression(StringConcatExpression expr)
+    {
+    }
+
     public virtual void VisitStringValueExpression(StringValueExpression expr)
     {
     }

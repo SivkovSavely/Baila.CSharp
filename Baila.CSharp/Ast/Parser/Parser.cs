@@ -751,6 +751,40 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             Trace("StringLiteral");
             result = new StringValueExpression(current.Value!);
         }
+        // Interpolated Strings
+        else if (Match(TokenType.PrivateStringConcat))
+        {
+            Trace("PrivateStringConcat");
+            var fixedStrings = new List<string>();
+            var expressions = new List<IExpression>();
+            bool? expressionWasLast = null;
+
+            Consume(TokenType.PrivateStringConcatStart);
+
+            while (!Match(TokenType.PrivateStringConcatEnd))
+            {
+                if (Get().Type == TokenType.StringLiteral)
+                {
+                    fixedStrings.Add(Consume(TokenType.StringLiteral).Value!);
+                    expressionWasLast = false;
+                }
+                else
+                {
+                    if (expressionWasLast is null or true)
+                    {
+                        fixedStrings.Add(""); // We always have to have a fixed string first or between expressions
+                    }
+                    expressions.Add(Expression());
+                    expressionWasLast = true;
+                }
+
+                if (Match(TokenType.PrivateStringConcatEnd)) break;
+
+                Consume(TokenType.Comma);
+            }
+            
+            result = new StringConcatExpression(fixedStrings, expressions);
+        }
         // true and false
         else if (Match(TokenType.True))
         {

@@ -652,9 +652,9 @@ public class Lexer(
             }
             
             AddToken(TokenType.PrivateStringConcat);
-            AddToken(TokenType.LeftParen);
+            AddToken(TokenType.PrivateStringConcatStart);
             _tokens.AddRange(interpolatedStringTokens!);
-            AddToken(TokenType.RightParen);
+            AddToken(TokenType.PrivateStringConcatEnd);
         }
         else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
         {

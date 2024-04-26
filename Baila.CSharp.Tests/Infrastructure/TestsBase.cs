@@ -97,7 +97,7 @@ file class ToStringFormatter : IValueFormatter
     public bool CanHandle(object? value)
     {
         // You can add additional logic here to only handle specific types
-        return value is not null; 
+        return value is BailaType; 
     }
 
     public void Format(object value, FormattedObjectGraph formattedGraph, FormattingContext context, FormatChild formatChild)

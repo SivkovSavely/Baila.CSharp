@@ -2,9 +2,9 @@
 
 using System.Globalization;
 using System.Text;
-using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
-using Baila.CSharp.Ast.Statements;
+using Baila.CSharp.Ast.Syntax.Expressions;
+using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Typing;
 

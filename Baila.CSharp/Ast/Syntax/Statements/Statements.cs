@@ -1,7 +1,7 @@
 ﻿using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Statements;
+namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record Statements : IStatement
 {

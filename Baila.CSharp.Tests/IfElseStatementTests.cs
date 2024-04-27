@@ -1,6 +1,6 @@
-using Baila.CSharp.Ast.Expressions;
 using Baila.CSharp.Ast.Functional;
-using Baila.CSharp.Ast.Statements;
+using Baila.CSharp.Ast.Syntax.Expressions;
+using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Tests.Infrastructure;

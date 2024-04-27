@@ -1,8 +1,8 @@
-﻿using Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Statements;
+namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record ConstantDefineStatement(string Name, IExpression Value) : IStatement
 {

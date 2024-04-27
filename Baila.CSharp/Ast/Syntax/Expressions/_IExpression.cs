@@ -2,9 +2,9 @@
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Expressions;
+namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public interface IExpression
+public interface IExpression : ISyntaxNode
 {
     /// <summary>
     /// Returns the Baila code for this expression.

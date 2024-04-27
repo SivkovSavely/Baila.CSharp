@@ -1,8 +1,8 @@
-﻿using Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.ControlFlowExceptions;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Statements;
+namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record ReturnStatement(IExpression? ReturnExpression = null) : IStatement
 {

@@ -4,7 +4,7 @@ using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Expressions;
+namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record StringConcatExpression(IEnumerable<string> FixedStrings, IEnumerable<IExpression> Expressions) : IExpression
 {

@@ -1,35 +1,33 @@
-﻿using Baila.CSharp.Ast.Expressions;
+﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Statements;
+namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record WhileStatement(
-    IExpression Condition,
-    IStatement Body)
-    : IStatement
+public record DoWhileStatement(IExpression Condition, IStatement Body) : IStatement
 {
+
     public void Execute()
     {
         NameTable.PushScope();
 
         var condition = Condition.Evaluate();
-        while (condition.GetAsBoolean())
+        do
         {
             Body.Execute();
-        }
+        } while (condition.GetAsBoolean());
         
         NameTable.PopScope();
     }
 
     public void AcceptVisitor(VisitorBase visitor)
     {
-        visitor.VisitWhileStatement(this);
+        visitor.VisitDoWhileStatement(this);
     }
 
     public override string ToString()
     {
-        return $"WhileStatement(" +
+        return $"DoWhileStatement(" +
                $"Condition={Condition}, " +
                $"Body={Body})";
     }

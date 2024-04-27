@@ -1,6 +1,6 @@
 ﻿using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Statements;
+namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record NoOpStatement : IStatement
 {

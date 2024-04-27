@@ -5,7 +5,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record VariableExpression(string Name) : IExpression
+public record VariableExpression(
+    string Name,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public string Stringify()
     {

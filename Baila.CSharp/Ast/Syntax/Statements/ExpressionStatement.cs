@@ -4,7 +4,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record ExpressionStatement(IExpression Expression) : IStatement
+public record ExpressionStatement(
+    IExpression Expression,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public IValue? Value { get; set; }
 

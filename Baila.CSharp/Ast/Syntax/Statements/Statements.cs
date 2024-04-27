@@ -3,7 +3,9 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record Statements : IStatement
+public record Statements(
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     private readonly List<IStatement> _statements = [];
 

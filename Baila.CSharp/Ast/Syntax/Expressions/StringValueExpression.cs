@@ -5,7 +5,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record StringValueExpression(string Value) : IExpression
+public record StringValueExpression(
+    string Value,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType GetBailaType() => BailaType.String;
 
@@ -13,6 +16,8 @@ public record StringValueExpression(string Value) : IExpression
     {
         return new StringValue(Value);
     }
+
+    public static StringValueExpression CreateVirtual(string value) => new(value, "", SyntaxNodeSpan.Empty);
 
     public void AcceptVisitor(VisitorBase visitor)
     {

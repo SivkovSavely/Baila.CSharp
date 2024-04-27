@@ -5,7 +5,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record PrefixUnaryExpression(PrefixUnaryExpression.Operation Op, IExpression OperandExpression) : IExpression
+public record PrefixUnaryExpression(
+    PrefixUnaryExpression.Operation Op,
+    IExpression OperandExpression,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public readonly record struct Operation(string Op)
     {

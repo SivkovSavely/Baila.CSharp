@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Text;
 using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Lexer;
@@ -10,16 +11,17 @@ using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Parser;
 
-public class Parser(List<Token> tokens, CancellationToken? cancellationToken = null)
+public class Parser(string filename, string source, List<Token> tokens, CancellationToken? cancellationToken = null)
 {
     private int _position;
     private readonly int _length = tokens.Count;
 
     private readonly Stack<int> _rollbackPositions = new();
+    private readonly string _filename = filename;
 
     public Statements BuildAst()
     {
-        var result = new Statements();
+        var result = new Statements(_filename, SyntaxNodeSpan.Empty);
 
         while (!Match(TokenType.EndOfFile))
         {
@@ -72,7 +74,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
                 value = Expression();
             }
 
-            stmt = new VariableDefineStatement(name, type, value);
+            stmt = new VariableDefineStatement(name, type, value, _filename, SyntaxNodeSpan.Empty);
         }
         else if (Match(TokenType.Const))
         {
@@ -81,7 +83,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             Consume(TokenType.Eq);
             var value = Expression();
 
-            stmt = new ConstantDefineStatement(name, value);
+            stmt = new ConstantDefineStatement(name, value, _filename, SyntaxNodeSpan.Empty);
         }
         else if (Match(TokenType.Function))
         {
@@ -93,11 +95,11 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             Trace("ReturnStatement");
             if (LookMatch(0, TokenType.EndOfFile) || LookMatch(0, TokenType.Semicolon) || LookMatch(0, TokenType.EndOfLine) || LookMatch(0, TokenType.RightCurly))
             {
-                stmt = new ReturnStatement();
+                stmt = new ReturnStatement(null, _filename, SyntaxNodeSpan.Empty);
             }
             else
             {
-                stmt = new ReturnStatement(Expression());
+                stmt = new ReturnStatement(Expression(), _filename, SyntaxNodeSpan.Empty);
             }
         }
         else if (Match(TokenType.Break))
@@ -121,12 +123,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         else if (Match(TokenType.EndOfLine) || Match(TokenType.Semicolon))
         {
             Trace("EOL or Semicolon");
-            return new NoOpStatement();
+            return new NoOpStatement(_filename, SyntaxNodeSpan.Empty);
         }
         else
         {
             Trace("ExpressionStatement");
-            stmt = new ExpressionStatement(Expression());
+            stmt = new ExpressionStatement(Expression(), _filename, SyntaxNodeSpan.Empty);
         }
         
         if (requireEndOfStatement)
@@ -222,7 +224,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         }
 
         return new FunctionDefineStatement(
-            name, parameters, body, returnType);
+            name, parameters, body, returnType, _filename, SyntaxNodeSpan.Empty);
     }
 
     private BailaType Type()
@@ -275,7 +277,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             _position = _rollbackPositions.Pop();
         }
 
-        return new IfElseStatement(condition, trueStmt, falseStmt);
+        return new IfElseStatement(condition, trueStmt, falseStmt, _filename, SyntaxNodeSpan.Empty);
     }
 
     private IStatement ForStatement()
@@ -306,7 +308,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         }
         else
         {
-            stepValue = new IntValueExpression(1);            
+            stepValue = new IntValueExpression(1, _filename, SyntaxNodeSpan.Empty);            
         }
 
         if (optionalLeftParen)
@@ -316,7 +318,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
 
         var body = StatementOrBlock();
 
-        return new ForStatement(counterVariable, initialValue, finalValue, stepValue, body);
+        return new ForStatement(counterVariable, initialValue, finalValue, stepValue, body, _filename, SyntaxNodeSpan.Empty);
     }
 
     private IStatement WhileStatement()
@@ -326,7 +328,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         var condition = Expression();
         var body = StatementOrBlock();
 
-        return new WhileStatement(condition, body);
+        return new WhileStatement(condition, body, _filename, SyntaxNodeSpan.Empty);
     }
 
     private IStatement DoWhileStatement()
@@ -337,7 +339,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         Consume(TokenType.While);
         var condition = Expression();
 
-        return new DoWhileStatement(condition, body);
+        return new DoWhileStatement(condition, body, _filename, SyntaxNodeSpan.Empty);
     }
 
     private IStatement StatementOrBlock(bool requireEndOfStatement = true)
@@ -358,7 +360,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        var block = new BlockStatement();
+        var block = new BlockStatement(_filename, SyntaxNodeSpan.Empty);
         Consume(TokenType.LeftCurly);
         while (!Match(TokenType.RightCurly))
         {
@@ -417,7 +419,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             Consume(TokenType.Eq);
             var expr = Assignment();
 
-            return new AssignmentExpression(name, expr);
+            return new AssignmentExpression(name, expr, _filename, SyntaxNodeSpan.Empty);
         }
 
         // TODO +-, -=, etc
@@ -435,7 +437,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Bar))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.BitwiseOr, result, BitwiseXor());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.BitwiseOr,
+                    result, 
+                    BitwiseXor(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -455,7 +462,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Caret))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.BitwiseXor, result, BitwiseAnd());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.BitwiseXor,
+                    result, 
+                    BitwiseAnd(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -475,7 +487,11 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Amp))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.BitwiseAnd, result, LogicalOr());
+                result = new BinaryExpression(BinaryExpression.Operation.BitwiseAnd,
+                    result,
+                    LogicalOr(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -495,7 +511,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.BarBar))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.LogicalOr, result, LogicalAnd());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.LogicalOr,
+                    result,
+                    LogicalAnd(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -515,7 +536,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.AmpAmp))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.LogicalAnd, result, Equality());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.LogicalAnd,
+                    result,
+                    Equality(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -535,13 +561,23 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.EqEq))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Equality, result, NumberRelation());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Equality,
+                    result,
+                    NumberRelation(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.ExclEq))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Inequality, result, NumberRelation());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Inequality,
+                    result,
+                    NumberRelation(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -561,25 +597,45 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Lt))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.LessThan, result, Addition());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.LessThan,
+                    result,
+                    Addition(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.LtEq))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.LessThanOrEqual, result, Addition());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.LessThanOrEqual,
+                    result,
+                    Addition(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.Gt))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.GreaterThan, result, Addition());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.GreaterThan,
+                    result,
+                    Addition(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.GtEq))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.GreaterThanOrEqual, result, Addition());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.GreaterThanOrEqual,
+                    result,
+                    Addition(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -599,13 +655,23 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Plus))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Addition, result, Multiplication());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Addition,
+                    result,
+                    Multiplication(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.Minus))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Subtraction, result, Multiplication());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Subtraction,
+                    result,
+                    Multiplication(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -625,19 +691,34 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.Slash))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.FloatDivision, result, Power());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.FloatDivision,
+                    result,
+                    Power(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.SlashSlash))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.IntegerDivision, result, Power());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.IntegerDivision,
+                    result,
+                    Power(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
             if (Match(TokenType.Star))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Multiplication, result, Power());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Multiplication,
+                    result,
+                    Power(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -657,7 +738,12 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         {
             if (Match(TokenType.StarStar))
             {
-                result = new BinaryExpression(BinaryExpression.Operation.Power, result, Unary());
+                result = new BinaryExpression(
+                    BinaryExpression.Operation.Power,
+                    result,
+                    Unary(),
+                    _filename,
+                    SyntaxNodeSpan.Empty);
                 continue;
             }
 
@@ -673,27 +759,43 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
 
         if (Match(TokenType.Tilde))
         {
-            return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.BitwiseNegation, Unary());
+            return new PrefixUnaryExpression(
+                PrefixUnaryExpression.Operation.BitwiseNegation,
+                Unary(),
+                _filename,
+                SyntaxNodeSpan.Empty);
         }
 
         if (Match(TokenType.Excl))
         {
-            return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.LogicalNegation, Unary());
+            return new PrefixUnaryExpression(
+                PrefixUnaryExpression.Operation.LogicalNegation,
+                Unary(),
+                _filename,
+                SyntaxNodeSpan.Empty);
         }
 
         if (Match(TokenType.Plus))
         {
-            return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.Plus, Unary());
+            return new PrefixUnaryExpression(
+                PrefixUnaryExpression.Operation.Plus,
+                Unary(),
+                _filename,
+                SyntaxNodeSpan.Empty);
         }
 
         if (Match(TokenType.Minus))
         {
-            return new PrefixUnaryExpression(PrefixUnaryExpression.Operation.Minus, Unary());
+            return new PrefixUnaryExpression(
+                PrefixUnaryExpression.Operation.Minus,
+                Unary(),
+                _filename,
+                SyntaxNodeSpan.Empty);
         }
 
         if (Match(TokenType.Typeof))
         {
-            return new TypeOfExpression(Unary());
+            return new TypeOfExpression(Unary(), _filename, SyntaxNodeSpan.Empty);
         }
 
         return Primary();
@@ -740,8 +842,10 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
             result = suffix switch
             {
                 'c' => throw new NotImplementedException("Char number literals are not implemented yet"),
-                _ when long.TryParse(number, CultureInfo.InvariantCulture, out var intNumber) => new IntValueExpression(intNumber),
-                _ when double.TryParse(number, CultureInfo.InvariantCulture, out var floatNumber) => new FloatValueExpression(floatNumber),
+                _ when long.TryParse(number, CultureInfo.InvariantCulture, out var intNumber) =>
+                    new IntValueExpression(intNumber, _filename, SyntaxNodeSpan.Empty),
+                _ when double.TryParse(number, CultureInfo.InvariantCulture, out var floatNumber) =>
+                    new FloatValueExpression(floatNumber, _filename, SyntaxNodeSpan.Empty),
                 _ => throw new Exception($"Could not infer type of the number: '{number}'")
             };
         }
@@ -749,7 +853,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
         else if (Match(TokenType.StringLiteral))
         {
             Trace("StringLiteral");
-            result = new StringValueExpression(current.Value!);
+            result = new StringValueExpression(current.Value!, _filename, SyntaxNodeSpan.Empty);
         }
         // Interpolated Strings
         else if (Match(TokenType.PrivateStringConcat))
@@ -783,24 +887,24 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
                 Consume(TokenType.Comma);
             }
             
-            result = new StringConcatExpression(fixedStrings, expressions);
+            result = new StringConcatExpression(fixedStrings, expressions, _filename, SyntaxNodeSpan.Empty);
         }
         // true and false
         else if (Match(TokenType.True))
         {
             Trace("True");
-            result = new BoolValueExpression(true);
+            result = new BoolValueExpression(true, _filename, SyntaxNodeSpan.Empty);
         }
         else if (Match(TokenType.False))
         {
             Trace("False");
-            result = new BoolValueExpression(false);
+            result = new BoolValueExpression(false, _filename, SyntaxNodeSpan.Empty);
         }
         // Variables and constants
         else if (Match(TokenType.Identifier))
         {
             Trace("Identifier");
-            result = new VariableExpression(current.Value!);
+            result = new VariableExpression(current.Value!, _filename, SyntaxNodeSpan.Empty);
         }
 
         if (result == null)
@@ -827,7 +931,7 @@ public class Parser(List<Token> tokens, CancellationToken? cancellationToken = n
                 Consume(TokenType.Comma);
             }
 
-            result = new FunctionCallExpression(result, args);
+            result = new FunctionCallExpression(result, args, _filename, SyntaxNodeSpan.Empty);
         }
         
         // TODO [array access], (function call) and object.dot.access

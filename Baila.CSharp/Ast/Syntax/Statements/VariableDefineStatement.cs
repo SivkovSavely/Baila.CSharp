@@ -7,7 +7,12 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record VariableDefineStatement(string Name, BailaType? Type, IExpression? ValueExpression) : IStatement
+public record VariableDefineStatement(
+    string Name,
+    BailaType? Type,
+    IExpression? ValueExpression,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

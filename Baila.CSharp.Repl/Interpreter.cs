@@ -75,7 +75,7 @@ public static class Interpreter
         }
 #endif
 
-        var parser = new Parser.Parser(tokens);
+        var parser = new Parser.Parser(filename, sourceCode, tokens);
         var ast = parser.BuildAst();
 
         new FunctionDefiningVisitor().VisitStatements(ast);

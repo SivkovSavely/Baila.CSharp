@@ -5,7 +5,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record AssignmentExpression(string Target, IExpression Expression) : IExpression
+public record AssignmentExpression(
+    string Target,
+    IExpression Expression,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType? GetBailaType()
     {

@@ -6,8 +6,9 @@ namespace Baila.CSharp.Ast.Syntax.Statements;
 public record IfElseStatement(
     IExpression Condition,
     IStatement TrueStatement,
-    IStatement? FalseStatement)
-    : IStatement
+    IStatement? FalseStatement,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
 
     public void Execute()

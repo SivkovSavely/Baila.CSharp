@@ -4,7 +4,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record ConstantDefineStatement(string Name, IExpression Value) : IStatement
+public record ConstantDefineStatement(
+    string Name,
+    IExpression Value,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

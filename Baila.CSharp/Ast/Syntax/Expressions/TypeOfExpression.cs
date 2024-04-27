@@ -6,7 +6,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record TypeOfExpression(IExpression Expression) : IExpression
+public record TypeOfExpression(
+    IExpression Expression,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType? GetBailaType()
     {

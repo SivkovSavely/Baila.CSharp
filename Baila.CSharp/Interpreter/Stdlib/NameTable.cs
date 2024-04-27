@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
@@ -130,7 +131,7 @@ public class NameTable
                         return new StringValue(Console.ReadLine() ?? "");
                     },
                     [
-                        new FunctionParameter("prompt", BailaType.String, new StringValueExpression(""))
+                        new FunctionParameter("prompt", BailaType.String, StringValueExpression.CreateVirtual(""))
                     ],
                     BailaType.String),
             ],

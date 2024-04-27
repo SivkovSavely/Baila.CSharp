@@ -27,7 +27,10 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123));
+
+                        expression.Expressions.Should().ContainSingle()
+                            .Which.Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
                     });
             });
         
@@ -50,7 +53,10 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123));
+
+                        expression.Expressions.Should().ContainSingle()
+                            .Which.Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
                     });
             });
         
@@ -73,7 +79,10 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("", " Def");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123));
+
+                        expression.Expressions.Should().ContainSingle()
+                            .Which.Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
                     });
             });
         
@@ -96,7 +105,10 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ", " Def");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123));
+
+                        expression.Expressions.Should().ContainSingle()
+                            .Which.Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
                     });
             });
         
@@ -119,7 +131,13 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ", "", " Def");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123), new IntValueExpression(456));
+
+                        expression.Expressions.Should().HaveCount(2)
+                            .And.Subject.First().Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
+    
+                        expression.Expressions.Skip(1).First().Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(456);
                     });
             });
         
@@ -142,7 +160,13 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ", " Ghi ", " Def");
-                        expression.Expressions.Should().Equal(new IntValueExpression(123), new IntValueExpression(456));
+
+                        expression.Expressions.Should().HaveCount(2)
+                            .And.Subject.First().Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(123);
+    
+                        expression.Expressions.Skip(1).First().Should().BeOfType<IntValueExpression>()
+                            .Which.Value.Should().Be(456);
                     });
             });
         
@@ -167,7 +191,9 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ");
-                        expression.Expressions.Should().Equal(new VariableExpression("def"));
+                        expression.Expressions.Should().ContainSingle()
+                            .Which.Should().BeOfType<VariableExpression>()
+                            .Which.Name.Should().Be("def");
                     });
             });
         

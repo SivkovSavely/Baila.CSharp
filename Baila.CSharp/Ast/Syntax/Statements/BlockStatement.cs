@@ -3,13 +3,18 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record BlockStatement : IStatement
+public record BlockStatement(
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
-    private readonly List<IStatement> _statements;
+    private readonly List<IStatement> _statements = [];
 
-    public BlockStatement(List<IStatement>? statementList = null)
+    public BlockStatement(
+        List<IStatement> statementList,
+        string Filename,
+        SyntaxNodeSpan Span) : this(Filename, Span)
     {
-        _statements = statementList ?? [];
+        _statements = statementList;
     }
 
     public IEnumerable<IStatement> Statements => _statements.AsReadOnly();

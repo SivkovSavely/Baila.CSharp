@@ -11,8 +11,9 @@ public record FunctionDefineStatement(
     string Name,
     List<FunctionParameter> Parameters,
     IStatement Body,
-    BailaType? ReturnType)
-    : IStatement
+    BailaType? ReturnType,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

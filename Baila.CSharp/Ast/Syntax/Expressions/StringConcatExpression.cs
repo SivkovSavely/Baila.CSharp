@@ -6,7 +6,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record StringConcatExpression(IEnumerable<string> FixedStrings, IEnumerable<IExpression> Expressions) : IExpression
+public record StringConcatExpression(
+    IEnumerable<string> FixedStrings,
+    IEnumerable<IExpression> Expressions,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType GetBailaType() => BailaType.String;
 

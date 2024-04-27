@@ -5,7 +5,12 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record BinaryExpression(BinaryExpression.Operation BinaryOperation, IExpression Left, IExpression Right) : IExpression
+public record BinaryExpression(
+    BinaryExpression.Operation BinaryOperation,
+    IExpression Left,
+    IExpression Right,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public readonly record struct Operation(string Op)
     {

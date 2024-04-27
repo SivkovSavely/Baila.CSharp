@@ -4,7 +4,11 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record DoWhileStatement(IExpression Condition, IStatement Body) : IStatement
+public record DoWhileStatement(
+    IExpression Condition,
+    IStatement Body,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
 
     public void Execute()

@@ -5,7 +5,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record BoolValueExpression(bool Value) : IExpression
+public record BoolValueExpression(
+    bool Value,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType GetBailaType() => BailaType.Bool;
 

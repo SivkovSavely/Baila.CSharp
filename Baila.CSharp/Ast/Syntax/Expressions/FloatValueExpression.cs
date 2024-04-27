@@ -6,7 +6,10 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
-public record FloatValueExpression(double Value) : IExpression
+public record FloatValueExpression(
+    double Value,
+    string Filename,
+    SyntaxNodeSpan Span) : IExpression
 {
     public BailaType GetBailaType() => BailaType.Float;
 

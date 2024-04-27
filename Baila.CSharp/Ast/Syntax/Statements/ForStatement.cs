@@ -11,8 +11,9 @@ public record ForStatement(
     IExpression InitialValue,
     IExpression FinalValue,
     IExpression StepValue,
-    IStatement Body)
-    : IStatement
+    IStatement Body,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

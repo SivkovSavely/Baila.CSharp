@@ -2,7 +2,9 @@
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record NoOpStatement : IStatement
+public record NoOpStatement(
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Ast.Syntax.Expressions;
+﻿using Baila.CSharp.Ast.Syntax;
+using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -7,6 +8,7 @@ namespace Baila.CSharp.Tests.Infrastructure;
 
 public class StatementStructureAsserterTests : TestsBase
 {
+    public const string Filename = "test.baila";
     public StatementStructureAsserterTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
@@ -14,17 +16,23 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements();
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1),
+                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
                 new ExpressionStatement(
                     new FunctionCallExpression(
-                        new VariableExpression("hello"),
-                        []
-                    )
+                        new VariableExpression("hello", Filename, SyntaxNodeSpan.Empty),
+                        [],
+                        Filename,
+                        SyntaxNodeSpan.Empty
+                    ),
+                    Filename,
+                    SyntaxNodeSpan.Empty
                 ),
-                null
+                null,
+                Filename,
+                SyntaxNodeSpan.Empty
             )
         );
 
@@ -36,17 +44,25 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WrongAssertion_TestFails()
     {
-        var ast = new Statements();
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1),
+                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
                 new ExpressionStatement(
                     new FunctionCallExpression(
-                        new VariableExpression("hello"),
-                        []
-                    )
+                        new VariableExpression("hello",
+                            Filename,
+                            SyntaxNodeSpan.Empty),
+                        [],
+                        Filename,
+                        SyntaxNodeSpan.Empty
+                    ),
+                    Filename,
+                    SyntaxNodeSpan.Empty
                 ),
-                null
+                null,
+                Filename,
+                SyntaxNodeSpan.Empty
             )
         );
 
@@ -61,17 +77,28 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WithAction_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements();
+        var ast = new Statements(Filename,
+            SyntaxNodeSpan.Empty);
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1),
+                new IntValueExpression(1,
+                    Filename,
+                    SyntaxNodeSpan.Empty),
                 new ExpressionStatement(
                     new FunctionCallExpression(
-                        new VariableExpression("hello"),
-                        []
-                    )
+                        new VariableExpression("hello",
+                            Filename,
+                            SyntaxNodeSpan.Empty),
+                        [],
+                        Filename,
+                        SyntaxNodeSpan.Empty
+                    ),
+                    Filename,
+                    SyntaxNodeSpan.Empty
                 ),
-                null
+                null,
+                Filename,
+                SyntaxNodeSpan.Empty
             )
         );
 
@@ -95,17 +122,29 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WithAction_FalseAssertion_TestFails()
     {
-        var ast = new Statements();
+        var ast = new Statements(
+            Filename,
+            SyntaxNodeSpan.Empty);
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1),
+                new IntValueExpression(1,
+                    Filename,
+                    SyntaxNodeSpan.Empty),
                 new ExpressionStatement(
                     new FunctionCallExpression(
-                        new VariableExpression("hello"),
-                        []
-                    )
+                        new VariableExpression("hello",
+                            Filename,
+                            SyntaxNodeSpan.Empty),
+                        [],
+                        Filename,
+                        SyntaxNodeSpan.Empty
+                    ),
+                    Filename,
+                    SyntaxNodeSpan.Empty
                 ),
-                null
+                null,
+                Filename,
+                SyntaxNodeSpan.Empty
             )
         );
 
@@ -170,10 +209,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements();
-        ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new ReturnStatement());
-        ast.AddStatement(new WhileStatement(null!, null!));
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
 
         AssertAst(
             ast,
@@ -188,10 +227,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_SomeAreNotAsserted_TestFails()
     {
-        var ast = new Statements();
-        ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new ReturnStatement());
-        ast.AddStatement(new WhileStatement(null!, null!));
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
         {
@@ -209,10 +248,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_ExtraAreAsserted_TestFails()
     {
-        var ast = new Statements();
-        ast.AddStatement(new IfElseStatement(null!, null!, null));
-        ast.AddStatement(new ReturnStatement());
-        ast.AddStatement(new WhileStatement(null!, null!));
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
+        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
         {
@@ -232,24 +271,24 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void AssertInnerBlock_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements();
+        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1),
+                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
                 new BlockStatement(
                     new List<IStatement>
                     {
                         new ExpressionStatement(
                             new FunctionCallExpression(
-                                new VariableExpression("hello"),
-                                []
-                            )
+                                new VariableExpression("hello", Filename, SyntaxNodeSpan.Empty),
+                                [], Filename, SyntaxNodeSpan.Empty
+                            ), Filename, SyntaxNodeSpan.Empty
                         ),
-                        new ReturnStatement(),
-                        new WhileStatement(null!, null!)
-                    }
+                        new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty),
+                        new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty)
+                    }, Filename, SyntaxNodeSpan.Empty
                 ),
-                null
+                null, Filename, SyntaxNodeSpan.Empty
             )
         );
 

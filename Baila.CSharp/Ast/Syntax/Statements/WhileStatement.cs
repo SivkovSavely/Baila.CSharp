@@ -6,8 +6,9 @@ namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record WhileStatement(
     IExpression Condition,
-    IStatement Body)
-    : IStatement
+    IStatement Body,
+    string Filename,
+    SyntaxNodeSpan Span) : IStatement
 {
     public void Execute()
     {

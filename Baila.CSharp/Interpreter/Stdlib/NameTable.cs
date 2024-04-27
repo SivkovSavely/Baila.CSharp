@@ -131,7 +131,7 @@ public class NameTable
                         return new StringValue(Console.ReadLine() ?? "");
                     },
                     [
-                        new FunctionParameter("prompt", BailaType.String, StringValueExpression.CreateVirtual(""))
+                        new FunctionParameter("prompt", BailaType.String, new StringValueExpression(""))
                     ],
                     BailaType.String),
             ],

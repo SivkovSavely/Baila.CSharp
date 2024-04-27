@@ -33,7 +33,7 @@ public static class Interpreter
                 {
                     var extraSpaces = maxLines - diagnosticLineSpan.LineNumber.ToString().Length;
 
-                    var lineOffset = 2 + maxLines + 3;
+                    var lineOffset = 2 + maxLines;
 
                     Console.Write("  ");
                     Console.Write(new string(' ', extraSpaces));
@@ -42,6 +42,7 @@ public static class Interpreter
                     Console.WriteLine(diagnosticLineSpan.FullLine);
 
                     Console.Write(new string(' ', lineOffset));
+                    Console.Write(" | ");
                     Console.Write(new string(' ', diagnosticLineSpan.StartColumn - 1));
                     Console.WriteLine(new string('^', diagnosticLineSpan.Length));
                 }
@@ -53,7 +54,11 @@ public static class Interpreter
 
     public static Statements Compile(string sourceCode, string filename, bool showTokens = false, bool showAst = false)
     {
-        var lexer = new Lexer.Lexer(sourceCode, filename);
+        var lexer = new Lexer.Lexer(
+            sourceCode
+                .Replace("\r\n", "\n")
+                .Replace("\r", "\n"),
+            filename);
         var tokens = lexer.Tokenize();
 
         if (lexer.Diagnostics.Any())
@@ -77,6 +82,11 @@ public static class Interpreter
 
         var parser = new Parser.Parser(filename, sourceCode, tokens);
         var ast = parser.BuildAst();
+
+        if (parser.Diagnostics.Any())
+        {
+            throw new ParseException(parser.Diagnostics);
+        }
 
         new FunctionDefiningVisitor().VisitStatements(ast);
 

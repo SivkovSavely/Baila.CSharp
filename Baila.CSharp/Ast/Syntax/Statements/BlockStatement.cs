@@ -1,18 +1,21 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record BlockStatement(
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    Token LeftCurlyToken,
+    Token RightCurlyToken) : IStatement
 {
     private readonly List<IStatement> _statements = [];
+    
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(LeftCurlyToken, RightCurlyToken);
 
     public BlockStatement(
+        Token LeftCurlyToken,
         List<IStatement> statementList,
-        string Filename,
-        SyntaxNodeSpan Span) : this(Filename, Span)
+        Token RightCurlyToken) : this(LeftCurlyToken, RightCurlyToken)
     {
         _statements = statementList;
     }

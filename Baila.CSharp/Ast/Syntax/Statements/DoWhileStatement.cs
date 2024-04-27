@@ -1,15 +1,18 @@
 ﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record DoWhileStatement(
-    IExpression Condition,
+    Token DoToken,
     IStatement Body,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    Token WhileToken,
+    IExpression Condition) : IStatement
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(
+        DoToken, Body, WhileToken, Condition);
 
     public void Execute()
     {

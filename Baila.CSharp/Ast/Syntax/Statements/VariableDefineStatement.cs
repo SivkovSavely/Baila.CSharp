@@ -1,5 +1,6 @@
 ﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -8,12 +9,20 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record VariableDefineStatement(
-    string Name,
+    Token VarToken,
+    Token NameIdentifier,
     BailaType? Type,
-    IExpression? ValueExpression,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    SyntaxNodeSpan? TypeSpan,
+    IExpression? ValueExpression) : IStatement
 {
+    public string Name { get; init; } = NameIdentifier.Value!;
+
+    public SyntaxNodeSpan Span { get; init; } = ValueExpression != null
+        ? SyntaxNodeSpan.Merge(VarToken, NameIdentifier, ValueExpression)
+        : TypeSpan != null
+            ? SyntaxNodeSpan.Merge(VarToken.Span, NameIdentifier.Span, TypeSpan.Value)
+            : SyntaxNodeSpan.Merge(VarToken, NameIdentifier);
+
     public void Execute()
     {
         BailaType variableType, valueType;

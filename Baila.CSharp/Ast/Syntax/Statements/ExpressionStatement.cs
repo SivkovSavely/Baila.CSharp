@@ -5,10 +5,9 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record ExpressionStatement(
-    IExpression Expression,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    IExpression Expression) : IStatement
 {
+    public SyntaxNodeSpan Span { get; init; } = Expression.Span;
     public IValue? Value { get; set; }
 
     public void Execute()

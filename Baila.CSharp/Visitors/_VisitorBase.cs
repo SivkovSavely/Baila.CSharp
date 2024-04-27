@@ -39,6 +39,11 @@ public abstract class VisitorBase
     {
     }
 
+    public virtual void VisitParenthesizedExpression(ParenthesizedExpression expr)
+    {
+        expr.AcceptVisitor(this);
+    }
+
     public virtual void VisitPrefixUnaryExpression(PrefixUnaryExpression expr)
     {
         expr.OperandExpression.AcceptVisitor(this);

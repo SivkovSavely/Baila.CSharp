@@ -8,10 +8,10 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 public record BinaryExpression(
     BinaryExpression.Operation BinaryOperation,
     IExpression Left,
-    IExpression Right,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    IExpression Right) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(Left, Right);
+    
     public readonly record struct Operation(string Op)
     {
         public static readonly Operation BitwiseOr = new("|");

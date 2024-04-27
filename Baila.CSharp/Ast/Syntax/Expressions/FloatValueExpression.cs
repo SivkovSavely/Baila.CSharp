@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -8,9 +9,10 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record FloatValueExpression(
     double Value,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token SourceLiteral) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SourceLiteral.Span;
+    
     public BailaType GetBailaType() => BailaType.Float;
 
     public IValue Evaluate()

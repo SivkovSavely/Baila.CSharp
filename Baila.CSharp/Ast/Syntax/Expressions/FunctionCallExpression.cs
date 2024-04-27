@@ -1,6 +1,7 @@
 ﻿using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -10,10 +11,13 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record FunctionCallExpression(
     IExpression FunctionHolder,
+    Token LeftParenthesisToken,
     List<IExpression> CallArgs,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token? RightParenthesisToken) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.MergeWithNulls(
+        [FunctionHolder, LeftParenthesisToken, ..CallArgs, RightParenthesisToken]);
+
     public BailaType? GetBailaType()
     {
         if (FunctionHolder is VariableExpression variableExpression)

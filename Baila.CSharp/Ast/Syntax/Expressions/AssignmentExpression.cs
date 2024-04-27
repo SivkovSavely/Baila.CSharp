@@ -6,11 +6,12 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record AssignmentExpression(
-    string Target,
-    IExpression Expression,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    IExpression TargetExpression,
+    ISyntaxNode EqualsSign,
+    IExpression Expression) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(TargetExpression, EqualsSign, Expression);
+
     public BailaType? GetBailaType()
     {
         return Expression.GetBailaType();
@@ -18,15 +19,20 @@ public record AssignmentExpression(
 
     public IValue Evaluate()
     {
+        if (TargetExpression is not VariableExpression variableExpression)
+        {
+            throw new Exception($"AssignmentExpression can only evaluate VariableExpressions for now, {TargetExpression.GetType().Name} was passed instead");
+        }
+        
         var value = Expression.Evaluate();
-        var member = NameTable.Get(Target);
+        var member = NameTable.Get(variableExpression.Name);
         
         if (!Expression.GetBailaType()!.IsImplicitlyConvertibleTo(member.Type))
         {
             throw new Exception($"Cannot convert '{Expression.GetBailaType()}' to '{member.Type}'");
         }
         
-        NameTable.Set(Target, value);
+        NameTable.Set(variableExpression.Name, value);
         return value;
     }
 
@@ -37,11 +43,11 @@ public record AssignmentExpression(
 
     public string Stringify()
     {
-        return $"{Target} = {Expression.Stringify()}";
+        return $"{TargetExpression.Stringify()} = {Expression.Stringify()}";
     }
 
     public override string ToString()
     {
-        return $"AssignmentExpression({Target} = {Expression})";
+        return $"AssignmentExpression({TargetExpression} = {Expression})";
     }
 }

@@ -203,13 +203,13 @@ public class LexerTests : TestsBase
         
         var i = -1;
         AssertToken(tokens, ++i, TokenType.PrivateStringConcat);
-        AssertToken(tokens, ++i, TokenType.LeftParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatStart);
         AssertToken(tokens, ++i, TokenType.StringLiteral, "hello ");
         AssertToken(tokens, ++i, TokenType.Comma);
         AssertToken(tokens, ++i, TokenType.Identifier, identifier);
         AssertToken(tokens, ++i, TokenType.Comma);
         AssertToken(tokens, ++i, TokenType.StringLiteral, " world");
-        AssertToken(tokens, ++i, TokenType.RightParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatEnd);
 
         AssertToken(tokens, ++i, TokenType.EndOfLine);
         AssertToken(tokens, ++i, TokenType.EndOfFile);
@@ -227,7 +227,7 @@ public class LexerTests : TestsBase
         
         var i = -1;
         AssertToken(tokens, ++i, TokenType.PrivateStringConcat);
-        AssertToken(tokens, ++i, TokenType.LeftParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatStart);
         AssertToken(tokens, ++i, TokenType.LeftParen);
         AssertToken(tokens, ++i, TokenType.Identifier, "i");
         AssertToken(tokens, ++i, TokenType.Star);
@@ -235,7 +235,7 @@ public class LexerTests : TestsBase
         AssertToken(tokens, ++i, TokenType.Plus);
         AssertToken(tokens, ++i, TokenType.NumberLiteral, "5");
         AssertToken(tokens, ++i, TokenType.RightParen);
-        AssertToken(tokens, ++i, TokenType.RightParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatEnd);
 
         AssertToken(tokens, ++i, TokenType.EndOfLine);
         AssertToken(tokens, ++i, TokenType.EndOfFile);
@@ -254,7 +254,7 @@ public class LexerTests : TestsBase
         
         var i = -1;
         AssertToken(tokens, ++i, TokenType.PrivateStringConcat);
-        AssertToken(tokens, ++i, TokenType.LeftParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatStart);
         AssertToken(tokens, ++i, TokenType.StringLiteral, "hello ");
         AssertToken(tokens, ++i, TokenType.Comma);
         AssertToken(tokens, ++i, TokenType.LeftParen);
@@ -266,7 +266,7 @@ public class LexerTests : TestsBase
         AssertToken(tokens, ++i, TokenType.RightParen);
         AssertToken(tokens, ++i, TokenType.Comma);
         AssertToken(tokens, ++i, TokenType.StringLiteral, " world");
-        AssertToken(tokens, ++i, TokenType.RightParen);
+        AssertToken(tokens, ++i, TokenType.PrivateStringConcatEnd);
 
         AssertToken(tokens, ++i, TokenType.EndOfLine);
         AssertToken(tokens, ++i, TokenType.EndOfFile);

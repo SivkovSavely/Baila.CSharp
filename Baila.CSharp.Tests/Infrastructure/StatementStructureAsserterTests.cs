@@ -1,14 +1,18 @@
 ﻿using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
+using Baila.CSharp.Lexer;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Baila.CSharp.Tests.Infrastructure;
 
-public class StatementStructureAsserterTests : TestsBase
+#pragma warning disable xUnit1000
+internal class StatementStructureAsserterTests : TestsBase
+#pragma warning restore xUnit1000
 {
     public const string Filename = "test.baila";
+
     public StatementStructureAsserterTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
@@ -16,23 +20,20 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        var ast = new Statements();
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
+                null!,
+                new IntValueExpression(1, new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
                 new ExpressionStatement(
                     new FunctionCallExpression(
-                        new VariableExpression("hello", Filename, SyntaxNodeSpan.Empty),
+                        new VariableExpression("hello", null!),
+                        null!,
                         [],
-                        Filename,
-                        SyntaxNodeSpan.Empty
-                    ),
-                    Filename,
-                    SyntaxNodeSpan.Empty
+                        null!
+                    )
                 ),
-                null,
-                Filename,
-                SyntaxNodeSpan.Empty
+                null
             )
         );
 
@@ -44,25 +45,21 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WrongAssertion_TestFails()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        var ast = new Statements();
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
+                null!,
+                new IntValueExpression(1, new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
                 new ExpressionStatement(
                     new FunctionCallExpression(
                         new VariableExpression("hello",
-                            Filename,
-                            SyntaxNodeSpan.Empty),
+                            new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
+                        null!,
                         [],
-                        Filename,
-                        SyntaxNodeSpan.Empty
-                    ),
-                    Filename,
-                    SyntaxNodeSpan.Empty
+                        null!
+                    )
                 ),
-                null,
-                Filename,
-                SyntaxNodeSpan.Empty
+                null
             )
         );
 
@@ -77,28 +74,21 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WithAction_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements(Filename,
-            SyntaxNodeSpan.Empty);
+        var ast = new Statements();
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1,
-                    Filename,
-                    SyntaxNodeSpan.Empty),
+                null!,
+                new IntValueExpression(1, new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
                 new ExpressionStatement(
                     new FunctionCallExpression(
                         new VariableExpression("hello",
-                            Filename,
-                            SyntaxNodeSpan.Empty),
+                            new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
+                        null!,
                         [],
-                        Filename,
-                        SyntaxNodeSpan.Empty
-                    ),
-                    Filename,
-                    SyntaxNodeSpan.Empty
+                        null!
+                    )
                 ),
-                null,
-                Filename,
-                SyntaxNodeSpan.Empty
+                null
             )
         );
 
@@ -122,29 +112,21 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void WithAction_FalseAssertion_TestFails()
     {
-        var ast = new Statements(
-            Filename,
-            SyntaxNodeSpan.Empty);
+        var ast = new Statements();
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1,
-                    Filename,
-                    SyntaxNodeSpan.Empty),
+                null!,
+                new IntValueExpression(1, new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
                 new ExpressionStatement(
                     new FunctionCallExpression(
                         new VariableExpression("hello",
-                            Filename,
-                            SyntaxNodeSpan.Empty),
+                            new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
+                        null!,
                         [],
-                        Filename,
-                        SyntaxNodeSpan.Empty
-                    ),
-                    Filename,
-                    SyntaxNodeSpan.Empty
+                        null!
+                    )
                 ),
-                null,
-                Filename,
-                SyntaxNodeSpan.Empty
+                null
             )
         );
 
@@ -209,10 +191,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
-        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
+        var ast = new Statements();
+        ast.AddStatement(new IfElseStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.If), null!, null!, null!));
+        ast.AddStatement(new ReturnStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.Return), null!));
+        ast.AddStatement(new WhileStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.While), null!, null!));
 
         AssertAst(
             ast,
@@ -227,10 +209,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_SomeAreNotAsserted_TestFails()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
-        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
+        var ast = new Statements();
+        ast.AddStatement(new IfElseStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.If), null!, null!, null!));
+        ast.AddStatement(new ReturnStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.Return), null!));
+        ast.AddStatement(new WhileStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.While), null!, null!));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
         {
@@ -248,10 +230,10 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void SeveralStatements_ExtraAreAsserted_TestFails()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
-        ast.AddStatement(new IfElseStatement(null!, null!, null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty));
-        ast.AddStatement(new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty));
+        var ast = new Statements();
+        ast.AddStatement(new IfElseStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.If), null!, null!, null!));
+        ast.AddStatement(new ReturnStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.Return), null!));
+        ast.AddStatement(new WhileStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.While), null!, null!));
 
         var exception = Assert.ThrowsAny<XunitException>(() =>
         {
@@ -271,24 +253,30 @@ public class StatementStructureAsserterTests : TestsBase
     [Fact]
     public void AssertInnerBlock_CorrectAssertion_AssertsCorrectly()
     {
-        var ast = new Statements(Filename, SyntaxNodeSpan.Empty);
+        var ast = new Statements();
         ast.AddStatement(
             new IfElseStatement(
-                new IntValueExpression(1, Filename, SyntaxNodeSpan.Empty),
+                null!,
+                new IntValueExpression(1, new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
                 new BlockStatement(
+                    null!,
                     new List<IStatement>
                     {
                         new ExpressionStatement(
                             new FunctionCallExpression(
-                                new VariableExpression("hello", Filename, SyntaxNodeSpan.Empty),
-                                [], Filename, SyntaxNodeSpan.Empty
-                            ), Filename, SyntaxNodeSpan.Empty
+                                new VariableExpression("hello",
+                                    new Token("", SyntaxNodeSpan.Empty, TokenType.NumberLiteral, "0")),
+                                null!,
+                                [],
+                                null!
+                            )
                         ),
-                        new ReturnStatement(null, Filename, SyntaxNodeSpan.Empty),
-                        new WhileStatement(null!, null!, Filename, SyntaxNodeSpan.Empty)
-                    }, Filename, SyntaxNodeSpan.Empty
+                        new ReturnStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.Return), null!),
+                        new WhileStatement(new Token("", SyntaxNodeSpan.Empty, TokenType.While), null!, null!)
+                    },
+                    null!
                 ),
-                null, Filename, SyntaxNodeSpan.Empty
+                null
             )
         );
 

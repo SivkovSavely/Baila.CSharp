@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -7,10 +8,11 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record TypeOfExpression(
-    IExpression Expression,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token TypeOfKeyword,
+    IExpression Expression) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(TypeOfKeyword, Expression);
+
     public BailaType? GetBailaType()
     {
         return Expression.GetBailaType();

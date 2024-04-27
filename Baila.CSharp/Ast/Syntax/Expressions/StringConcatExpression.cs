@@ -8,10 +8,10 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record StringConcatExpression(
     IEnumerable<string> FixedStrings,
-    IEnumerable<IExpression> Expressions,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    IEnumerable<IExpression> Expressions) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.ThrowEmpty;
+    
     public BailaType GetBailaType() => BailaType.String;
 
     public IValue Evaluate()

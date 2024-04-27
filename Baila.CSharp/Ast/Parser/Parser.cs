@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using System.Text;
+using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
@@ -18,14 +19,23 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
     private readonly Stack<int> _rollbackPositions = new();
     private readonly string _filename = filename;
+    private readonly List<ParserDiagnostic> _diagnostics = [];
+
+    public IEnumerable<ParserDiagnostic> Diagnostics => _diagnostics.AsReadOnly();
 
     public Statements BuildAst()
     {
-        var result = new Statements(_filename, SyntaxNodeSpan.Empty);
+        var result = new Statements();
 
         while (!Match(TokenType.EndOfFile))
         {
-            result.AddStatement(Statement());
+            var stmt = Statement();
+            result.AddStatement(stmt);
+        
+            /*AddDiagnostic(
+                ParserDiagnostics.BP0000_Test,
+                stmt,
+                underlinedNode: stmt);*/
         }
 
         return result;
@@ -37,36 +47,38 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
         IStatement stmt = null!;
 
-        if (Match(TokenType.If))
+        if (Match(TokenType.If, out var ifKeyword))
         {
             Trace("IfElseStatement");
-            stmt = IfElseStatement();
+            stmt = IfElseStatement(ifKeyword);
         }
-        else if (Match(TokenType.For))
+        else if (Match(TokenType.For, out var forKeyword))
         {
             Trace("ForStatement");
-            stmt = ForStatement();
+            stmt = ForStatement(forKeyword);
         }
-        else if (Match(TokenType.While))
+        else if (Match(TokenType.While, out var whileKeyword))
         {
             Trace("WhileStatement");
-            stmt = WhileStatement();
+            stmt = WhileStatement(whileKeyword);
         }
-        else if (Match(TokenType.Do))
+        else if (Match(TokenType.Do, out var doKeyword))
         {
             Trace("DoWhileStatement");
-            stmt = DoWhileStatement();
+            stmt = DoWhileStatement(doKeyword);
         }
-        else if (Match(TokenType.Var))
+        else if (Match(TokenType.Var, out var varKeyword))
         {
             Trace("VariableDefineStatement");
-            var name = Consume(TokenType.Identifier).Value!;
+            var nameIdentifier = Consume(TokenType.Identifier);
             BailaType? type = null;
             IExpression? value = null;
 
+            SyntaxNodeSpan? typeSpan = null;
             if (Match(TokenType.Colon))
             {
-                type = Type();
+                type = Type(out var typeSpan2);
+                typeSpan = typeSpan2;
             }
 
             if (Match(TokenType.Eq))
@@ -74,32 +86,33 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 value = Expression();
             }
 
-            stmt = new VariableDefineStatement(name, type, value, _filename, SyntaxNodeSpan.Empty);
+            stmt = new VariableDefineStatement(varKeyword, nameIdentifier, type, typeSpan, value);
         }
         else if (Match(TokenType.Const))
         {
             Trace("ConstantDefineStatement");
-            var name = Consume(TokenType.Identifier).Value!;
-            Consume(TokenType.Eq);
+            var constKeyword = Get(-1);
+            var nameIdentifier = Consume(TokenType.Identifier);
+            var equalsToken = Consume(TokenType.Eq);
             var value = Expression();
 
-            stmt = new ConstantDefineStatement(name, value, _filename, SyntaxNodeSpan.Empty);
+            stmt = new ConstantDefineStatement(constKeyword, nameIdentifier, equalsToken, value);
         }
-        else if (Match(TokenType.Function))
+        else if (Match(TokenType.Function, out var functionKeyword))
         {
             Trace("FunctionDefinition");
-            stmt = FunctionDefinition();
+            stmt = FunctionDefinition(functionKeyword);
         }
-        else if (Match(TokenType.Return))
+        else if (Match(TokenType.Return, out var returnToken))
         {
             Trace("ReturnStatement");
             if (LookMatch(0, TokenType.EndOfFile) || LookMatch(0, TokenType.Semicolon) || LookMatch(0, TokenType.EndOfLine) || LookMatch(0, TokenType.RightCurly))
             {
-                stmt = new ReturnStatement(null, _filename, SyntaxNodeSpan.Empty);
+                stmt = new ReturnStatement(returnToken, null);
             }
             else
             {
-                stmt = new ReturnStatement(Expression(), _filename, SyntaxNodeSpan.Empty);
+                stmt = new ReturnStatement(returnToken, Expression());
             }
         }
         else if (Match(TokenType.Break))
@@ -123,12 +136,12 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         else if (Match(TokenType.EndOfLine) || Match(TokenType.Semicolon))
         {
             Trace("EOL or Semicolon");
-            return new NoOpStatement(_filename, SyntaxNodeSpan.Empty);
+            return new NoOpStatement(Get(-1).Span);
         }
         else
         {
             Trace("ExpressionStatement");
-            stmt = new ExpressionStatement(Expression(), _filename, SyntaxNodeSpan.Empty);
+            stmt = new ExpressionStatement(Expression());
         }
         
         if (requireEndOfStatement)
@@ -139,7 +152,12 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 !LookMatch(0, TokenType.RightCurly) &&
                 !LookMatch(0, TokenType.Else))
             {
-                throw new Exception($"Syntax error: unexpected token {Get()}, expected a new line or a semicolon");
+                AddDiagnostic<Token, TokenType[]>(
+                    ParserDiagnostics.BP0001_UnexpectedToken,
+                    Get(),
+                    [TokenType.EndOfLine, TokenType.Semicolon],
+                    underlinedNode: Get());
+                throw new ParseException(_diagnostics);
             }
 
             if (LookMatch(0, TokenType.EndOfLine)) Consume(TokenType.EndOfLine);
@@ -155,22 +173,24 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         return stmt;
     }
 
-    private FunctionDefineStatement FunctionDefinition()
+    private FunctionDefineStatement FunctionDefinition(Token functionKeyword)
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        var name = Consume(TokenType.Identifier).Value!;
+        var functionNameIdentifier = Consume(TokenType.Identifier);
         var parameters = new List<FunctionParameter>();
         BailaType? returnType = null;
 
-        if (Match(TokenType.LeftParen))
+        Token? leftParen = null;
+        Token? rightParen = null;
+        if (Match(TokenType.LeftParen, out leftParen))
         {
             // TODO varargs
             while (!Match(TokenType.RightParen))
             {
                 var paramName = Consume(TokenType.Identifier).Value!;
                 Consume(TokenType.Colon);
-                var paramType = Type();
+                var paramType = Type(out _);
                 IExpression? defaultValue = null;
                 if (Match(TokenType.Eq))
                 {
@@ -181,7 +201,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                     new FunctionParameter(
                         paramName, paramType, defaultValue, false));
 
-                if (Match(TokenType.RightParen)) break;
+                if (Match(TokenType.RightParen, out rightParen)) break;
 
                 Consume(TokenType.Comma);
             }
@@ -192,7 +212,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         if (Match(TokenType.Colon)) {
             // TODO redo to catch fully optional expression
             SkipOptionalNewline();
-            returnType = Type();
+            returnType = Type(out _);
         } else {
             // Return type is not specified, try to parse the return type from the body
             // If there are no return statements then the function is void.
@@ -224,39 +244,54 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         }
 
         return new FunctionDefineStatement(
-            name, parameters, body, returnType, _filename, SyntaxNodeSpan.Empty);
+            functionKeyword, functionNameIdentifier, leftParen, parameters, rightParen, returnType, body);
     }
 
-    private BailaType Type()
+    private BailaType Type(out SyntaxNodeSpan typeSpan)
     {
         cancellationToken?.ThrowIfCancellationRequested();
+        SyntaxNodeSpan? span = null;
 
         // nullable check
-        var isNullable = Match(TokenType.Question);
+        var isNullable = Match(TokenType.Question, out var questionToken);
+        if (isNullable)
+        {
+            span = questionToken.Span;
+        }
         
         // generics
         List<BailaType>? genericsList = null;
-        if (Match(TokenType.Lt)) // TODO support LtLt e.g. <<Int>List>List
+        if (Match(TokenType.Lt, out var genericLtToken)) // TODO support LtLt e.g. <<Int>List>List
         {
+            span = span.HasValue ? SyntaxNodeSpan.Merge(span.Value, genericLtToken.Span) : genericLtToken.Span;
             genericsList = new();
-            while (!Match(TokenType.Gt))
+
+            Token genericGtToken;
+            while (!Match(TokenType.Gt, out genericGtToken))
             {
-                var genericType = Type();
+                var genericType = Type(out var genericTypeSpan);
+                span = SyntaxNodeSpan.Merge(span.Value, genericTypeSpan);
+
                 genericsList.Add(genericType);
 
                 if (Match(TokenType.Gt)) break;
 
                 Consume(TokenType.Comma);
             }
+            
+            span = SyntaxNodeSpan.Merge(span.Value, genericGtToken.Span);
         }
         
         // type name
-        var result = new BailaType(Consume(TokenType.Identifier).Value!, isNullable, genericsList);
+        var typeNameIdentifier = Consume(TokenType.Identifier);
+        span = span.HasValue ? SyntaxNodeSpan.Merge(span.Value, typeNameIdentifier.Span) : typeNameIdentifier.Span;
 
+        var result = new BailaType(typeNameIdentifier.Value!, isNullable, genericsList);
+        typeSpan = span.Value;
         return result;
     }
 
-    private IStatement IfElseStatement()
+    private IStatement IfElseStatement(Token ifKeyword)
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
@@ -277,26 +312,29 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             _position = _rollbackPositions.Pop();
         }
 
-        return new IfElseStatement(condition, trueStmt, falseStmt, _filename, SyntaxNodeSpan.Empty);
+        return new IfElseStatement(ifKeyword, condition, trueStmt, falseStmt);
     }
 
-    private IStatement ForStatement()
+    private IStatement ForStatement(Token forKeyword)
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
         var optionalLeftParen = Match(TokenType.LeftParen);
 
-        var counterVariable = Consume(TokenType.Identifier).Value!;
-        Consume(TokenType.Eq);
+        var counterVariableIdentifier = Consume(TokenType.Identifier);
+        var equalsToken = Consume(TokenType.Eq);
         var initialValue = Expression();
 
         if (!(Get().Type == TokenType.Identifier && Get().Value == "to"))
         {
-            throw new Exception(
-                "Syntax error: 'to' expected in 'for' loop. For C-like style of 'for' loop, please use 'while' instead");
+            AddDiagnostic(
+                ParserDiagnostics.BP0002_ExpectedToInForLoop,
+                Get(),
+                underlinedNode: Get());
+            throw new ParseException(_diagnostics);
         }
 
-        Match(TokenType.Identifier);
+        Match(TokenType.Identifier, out var toSoftKeyword);
 
         var finalValue = Expression();
 
@@ -308,7 +346,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         }
         else
         {
-            stepValue = new IntValueExpression(1, _filename, SyntaxNodeSpan.Empty);            
+            stepValue = new IntValueExpression(1, forKeyword);
         }
 
         if (optionalLeftParen)
@@ -318,28 +356,29 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
         var body = StatementOrBlock();
 
-        return new ForStatement(counterVariable, initialValue, finalValue, stepValue, body, _filename, SyntaxNodeSpan.Empty);
+        return new ForStatement(
+            forKeyword, counterVariableIdentifier, equalsToken, initialValue, toSoftKeyword, finalValue, stepValue, body);
     }
 
-    private IStatement WhileStatement()
+    private IStatement WhileStatement(Token whileKeyword)
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
         var condition = Expression();
         var body = StatementOrBlock();
 
-        return new WhileStatement(condition, body, _filename, SyntaxNodeSpan.Empty);
+        return new WhileStatement(whileKeyword, condition, body);
     }
 
-    private IStatement DoWhileStatement()
+    private IStatement DoWhileStatement(Token doKeyword)
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
         var body = StatementOrBlock();
-        Consume(TokenType.While);
+        var whileKeyword = Consume(TokenType.While);
         var condition = Expression();
 
-        return new DoWhileStatement(condition, body, _filename, SyntaxNodeSpan.Empty);
+        return new DoWhileStatement(doKeyword, body, whileKeyword, condition);
     }
 
     private IStatement StatementOrBlock(bool requireEndOfStatement = true)
@@ -360,13 +399,16 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        var block = new BlockStatement(_filename, SyntaxNodeSpan.Empty);
-        Consume(TokenType.LeftCurly);
-        while (!Match(TokenType.RightCurly))
+        var leftCurlyToken = Consume(TokenType.LeftCurly);
+        var statements = new List<IStatement>();
+        Token rightCurlyToken;
+
+        while (!Match(TokenType.RightCurly, out rightCurlyToken))
         {
-            block.AddStatement(Statement(requireEndOfStatement));
+            statements.Add(Statement(requireEndOfStatement));
         }
 
+        var block = new BlockStatement(leftCurlyToken, statements, rightCurlyToken);
         return block;
     }
 
@@ -377,7 +419,11 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         var current = Get();
         if (current.Type != tokenType)
         {
-            throw new Exception($"Syntax error: unexpected token {current.Type}, expected {tokenType}");
+            AddDiagnostic<Token, TokenType[]>(
+                ParserDiagnostics.BP0001_UnexpectedToken,
+                current, [tokenType],
+                underlinedNode: current);
+            throw new ParseException(_diagnostics);
         }
 
         _position++;
@@ -406,7 +452,14 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         cancellationToken?.ThrowIfCancellationRequested();
 
         Trace("Expression");
-        return Assignment();
+        var expr = Assignment();
+        
+        /*AddDiagnostic(
+            ParserDiagnostics.BP0000_Test,
+            expr,
+            underlinedNode: expr);*/
+        
+        return expr;
     }
 
     private IExpression Assignment()
@@ -415,11 +468,13 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
         if (LookMatch(0, TokenType.Identifier) && LookMatch(1, TokenType.Eq))
         {
-            var name = Consume(TokenType.Identifier).Value!;
-            Consume(TokenType.Eq);
+            var nameIdentifierToken = Consume(TokenType.Identifier);
+            var name = nameIdentifierToken.Value!;
+            var equalsSign = Consume(TokenType.Eq);
             var expr = Assignment();
 
-            return new AssignmentExpression(name, expr, _filename, SyntaxNodeSpan.Empty);
+            var target = new VariableExpression(name, nameIdentifierToken);
+            return new AssignmentExpression(target, equalsSign, expr);
         }
 
         // TODO +-, -=, etc
@@ -440,9 +495,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.BitwiseOr,
                     result, 
-                    BitwiseXor(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    BitwiseXor());
                 continue;
             }
 
@@ -465,9 +518,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.BitwiseXor,
                     result, 
-                    BitwiseAnd(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    BitwiseAnd());
                 continue;
             }
 
@@ -489,9 +540,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             {
                 result = new BinaryExpression(BinaryExpression.Operation.BitwiseAnd,
                     result,
-                    LogicalOr(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    LogicalOr());
                 continue;
             }
 
@@ -514,9 +563,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.LogicalOr,
                     result,
-                    LogicalAnd(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    LogicalAnd());
                 continue;
             }
 
@@ -539,9 +586,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.LogicalAnd,
                     result,
-                    Equality(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Equality());
                 continue;
             }
 
@@ -564,9 +609,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Equality,
                     result,
-                    NumberRelation(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    NumberRelation());
                 continue;
             }
 
@@ -575,9 +618,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Inequality,
                     result,
-                    NumberRelation(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    NumberRelation());
                 continue;
             }
 
@@ -600,9 +641,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.LessThan,
                     result,
-                    Addition(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Addition());
                 continue;
             }
 
@@ -611,9 +650,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.LessThanOrEqual,
                     result,
-                    Addition(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Addition());
                 continue;
             }
 
@@ -622,9 +659,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.GreaterThan,
                     result,
-                    Addition(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Addition());
                 continue;
             }
 
@@ -633,9 +668,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.GreaterThanOrEqual,
                     result,
-                    Addition(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Addition());
                 continue;
             }
 
@@ -658,9 +691,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Addition,
                     result,
-                    Multiplication(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Multiplication());
                 continue;
             }
 
@@ -669,9 +700,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Subtraction,
                     result,
-                    Multiplication(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Multiplication());
                 continue;
             }
 
@@ -694,9 +723,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.FloatDivision,
                     result,
-                    Power(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Power());
                 continue;
             }
 
@@ -705,9 +732,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.IntegerDivision,
                     result,
-                    Power(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Power());
                 continue;
             }
 
@@ -716,9 +741,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Multiplication,
                     result,
-                    Power(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Power());
                 continue;
             }
 
@@ -741,9 +764,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 result = new BinaryExpression(
                     BinaryExpression.Operation.Power,
                     result,
-                    Unary(),
-                    _filename,
-                    SyntaxNodeSpan.Empty);
+                    Unary());
                 continue;
             }
 
@@ -757,45 +778,43 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
     {
         cancellationToken?.ThrowIfCancellationRequested();
 
-        if (Match(TokenType.Tilde))
+        Token operatorToken;
+
+        if (Match(TokenType.Tilde, out operatorToken))
         {
             return new PrefixUnaryExpression(
                 PrefixUnaryExpression.Operation.BitwiseNegation,
-                Unary(),
-                _filename,
-                SyntaxNodeSpan.Empty);
+                operatorToken,
+                Unary());
         }
 
-        if (Match(TokenType.Excl))
+        if (Match(TokenType.Excl, out operatorToken))
         {
             return new PrefixUnaryExpression(
                 PrefixUnaryExpression.Operation.LogicalNegation,
-                Unary(),
-                _filename,
-                SyntaxNodeSpan.Empty);
+                operatorToken,
+                Unary());
         }
 
-        if (Match(TokenType.Plus))
+        if (Match(TokenType.Plus, out operatorToken))
         {
             return new PrefixUnaryExpression(
                 PrefixUnaryExpression.Operation.Plus,
-                Unary(),
-                _filename,
-                SyntaxNodeSpan.Empty);
+                operatorToken,
+                Unary());
         }
 
-        if (Match(TokenType.Minus))
+        if (Match(TokenType.Minus, out operatorToken))
         {
             return new PrefixUnaryExpression(
                 PrefixUnaryExpression.Operation.Minus,
-                Unary(),
-                _filename,
-                SyntaxNodeSpan.Empty);
+                operatorToken,
+                Unary());
         }
 
-        if (Match(TokenType.Typeof))
+        if (Match(TokenType.Typeof, out var typeofKeyword))
         {
-            return new TypeOfExpression(Unary(), _filename, SyntaxNodeSpan.Empty);
+            return new TypeOfExpression(typeofKeyword, Unary());
         }
 
         return Primary();
@@ -810,12 +829,12 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         IExpression? result = null;
 
         // (expr)
-        if (Match(TokenType.LeftParen))
+        if (Match(TokenType.LeftParen, out var leftParenToken))
         {
             Trace("LeftParen");
             var expression = Expression();
-            Consume(TokenType.RightParen);
-            result = expression;
+            var rightParenToken = Consume(TokenType.RightParen);
+            result = new ParenthesizedExpression(leftParenToken, expression, rightParenToken);
         }
         // [ listElem1, listElem2, ..., listElemN ]
         else if (Match(TokenType.LeftBracket))
@@ -832,10 +851,10 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             throw new NotImplementedException("List expressions are not implemented yet");
         }
         // Numbers
-        else if (Match(TokenType.NumberLiteral))
+        else if (Match(TokenType.NumberLiteral, out var numberLiteralToken))
         {
             Trace("NumberLiteral");
-            var currentNum = current.Value!;
+            var currentNum = numberLiteralToken.Value!;
             var suffix = currentNum.Last();
             var number = suffix is 'c' ? currentNum[..^1] : currentNum;
 
@@ -843,17 +862,26 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             {
                 'c' => throw new NotImplementedException("Char number literals are not implemented yet"),
                 _ when long.TryParse(number, CultureInfo.InvariantCulture, out var intNumber) =>
-                    new IntValueExpression(intNumber, _filename, SyntaxNodeSpan.Empty),
+                    new IntValueExpression(intNumber, numberLiteralToken),
                 _ when double.TryParse(number, CultureInfo.InvariantCulture, out var floatNumber) =>
-                    new FloatValueExpression(floatNumber, _filename, SyntaxNodeSpan.Empty),
-                _ => throw new Exception($"Could not infer type of the number: '{number}'")
+                    new FloatValueExpression(floatNumber, numberLiteralToken),
+                _ => null
             };
+
+            if (result == null)
+            {
+                AddDiagnostic(
+                    ParserDiagnostics.BP0003_CountNotInferTypeOfNumber,
+                    Get(-1),
+                    underlinedNode: Get(-1));
+                throw new ParseException(_diagnostics);
+            }
         }
         // Strings
-        else if (Match(TokenType.StringLiteral))
+        else if (Match(TokenType.StringLiteral, out var stringLiteralToken))
         {
             Trace("StringLiteral");
-            result = new StringValueExpression(current.Value!, _filename, SyntaxNodeSpan.Empty);
+            result = new StringValueExpression(stringLiteralToken.Value!, stringLiteralToken);
         }
         // Interpolated Strings
         else if (Match(TokenType.PrivateStringConcat))
@@ -887,29 +915,33 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 Consume(TokenType.Comma);
             }
             
-            result = new StringConcatExpression(fixedStrings, expressions, _filename, SyntaxNodeSpan.Empty);
+            result = new StringConcatExpression(fixedStrings, expressions);
         }
         // true and false
-        else if (Match(TokenType.True))
+        else if (Match(TokenType.True, out var trueLiteralToken))
         {
             Trace("True");
-            result = new BoolValueExpression(true, _filename, SyntaxNodeSpan.Empty);
+            result = new BoolValueExpression(true, trueLiteralToken);
         }
-        else if (Match(TokenType.False))
+        else if (Match(TokenType.False, out var falseLiteralToken))
         {
             Trace("False");
-            result = new BoolValueExpression(false, _filename, SyntaxNodeSpan.Empty);
+            result = new BoolValueExpression(false, falseLiteralToken);
         }
         // Variables and constants
-        else if (Match(TokenType.Identifier))
+        else if (Match(TokenType.Identifier, out var identifierToken))
         {
             Trace("Identifier");
-            result = new VariableExpression(current.Value!, _filename, SyntaxNodeSpan.Empty);
+            result = new VariableExpression(identifierToken.Value!, identifierToken);
         }
 
         if (result == null)
         {
-            throw new Exception($"Syntax error: unexpected {current}");
+            AddDiagnostic(ParserDiagnostics.BP0001_UnexpectedToken,
+                current,
+                "end of statement, call, array access or dot access",
+                underlinedNode: current);
+            throw new ParseException(_diagnostics);
         }
 
         cancellationToken?.ThrowIfCancellationRequested();
@@ -918,9 +950,10 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         {
             Trace("LeftParen after");
             var args = new List<IExpression>();
-            Consume(TokenType.LeftParen);
+            var leftParen = Consume(TokenType.LeftParen);
+            Token? rightParen = null;
 
-            while (!Match(TokenType.EndOfFile) && !Match(TokenType.RightParen))
+            while (!Match(TokenType.EndOfFile) && !Match(TokenType.RightParen, out rightParen))
             {
                 args.Add(Expression());
                 if (Match(TokenType.RightParen))
@@ -931,7 +964,7 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                 Consume(TokenType.Comma);
             }
 
-            result = new FunctionCallExpression(result, args, _filename, SyntaxNodeSpan.Empty);
+            result = new FunctionCallExpression(result, leftParen, args, rightParen);
         }
         
         // TODO [array access], (function call) and object.dot.access
@@ -949,6 +982,22 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             return false;
         }
 
+        ++_position;
+        return true;
+    }
+
+    private bool Match(TokenType tokenType, out Token outToken)
+    {
+        cancellationToken?.ThrowIfCancellationRequested();
+
+        var token = Get();
+        if (token.Type != tokenType)
+        {
+            outToken = null!;
+            return false;
+        }
+
+        outToken = token;
         ++_position;
         return true;
     }
@@ -978,19 +1027,52 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         {
             var prev = GetAbsolute(absolute - 1);
             return new Token(
-                new Cursor(
-                    prev.Cursor.Position,
-                    prev.Cursor.Column,
-                    prev.Cursor.Line,
-                    prev.Cursor.Filename),
+                filename,
+                prev.Span,
                 TokenType.EndOfFile);
         }
         catch (Exception)
         {
             return new Token(
-                new Cursor(0, 0, 0, ""),
+                _filename,
+                SyntaxNodeSpan.ThrowEmpty,
                 TokenType.EndOfFile);
         }
+    }
+
+    private void AddDiagnostic<TParam>(
+        Func<TParam, string[], ParserDiagnostic> diagnosticCreator,
+        TParam param,
+        ISyntaxNode underlinedNode)
+    {
+        var diagnostic = diagnosticCreator(param, GetRelevantLines(underlinedNode));
+        _diagnostics.Add(diagnostic);
+    }
+
+    private void AddDiagnostic<TParam1, TParam2>(
+        Func<TParam1, TParam2, string[], ParserDiagnostic> diagnosticCreator,
+        TParam1 param1, TParam2 param2,
+        ISyntaxNode underlinedNode)
+    {
+        var diagnostic = diagnosticCreator(param1, param2, GetRelevantLines(underlinedNode));
+        _diagnostics.Add(diagnostic);
+    }
+
+    private void AddDiagnostic<TParam1, TParam2, TParam3>(
+        Func<TParam1, TParam2, TParam3, string[], ParserDiagnostic> diagnosticCreator,
+        TParam1 param1, TParam2 param2, TParam3 param3,
+        ISyntaxNode underlinedNode)
+    {
+        var diagnostic = diagnosticCreator(param1, param2, param3, GetRelevantLines(underlinedNode));
+        _diagnostics.Add(diagnostic);
+    }
+
+    private string[] GetRelevantLines(ISyntaxNode node)
+    {
+        var startLine = node.Span.StartLine;
+        var endLineInclusive = node.Span.EndLine;
+        var lines = source.Split("\n")[(startLine - 1)..endLineInclusive]; // TODO
+        return lines;
     }
 
     private void Trace(string message)
@@ -1004,12 +1086,12 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
     {
         var sb = new StringBuilder();
 
-        var longestLineCol = tokens.Select(t => $"{t.Cursor.Line}:{t.Cursor.Column}").Max(x => x.Length) + 1;
+        var longestLineCol = tokens.Select(t => $"{t.Span.StartLine}:{t.Span.StartColumn}").Max(x => x.Length) + 1;
         var selection = 10;
 
         foreach (var token in tokens)
         {
-            var lineCol = $"{token.Cursor.Line}:{token.Cursor.Column} ";
+            var lineCol = $"{token.Span.StartLine}:{token.Span.StartColumn} ";
             sb.Append(lineCol);
             if (token == Get())
             {

@@ -3,11 +3,12 @@ using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
-public record Statements(
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+public record Statements : IStatement
 {
     private readonly List<IStatement> _statements = [];
+    private SyntaxNodeSpan? _span;
+
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Empty; // TODO fix this not updating
 
     public IEnumerable<IStatement> StatementList => _statements.AsReadOnly();
 
@@ -16,6 +17,10 @@ public record Statements(
     public void AddStatement(IStatement statement)
     {
         _statements.Add(statement);
+
+        _span = _span == null
+            ? statement.Span
+            : SyntaxNodeSpan.Merge(_span.Value, statement.Span);
     }
 
     public void Execute()

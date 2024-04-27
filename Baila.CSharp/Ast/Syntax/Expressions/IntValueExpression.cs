@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Runtime.Values;
+﻿using Baila.CSharp.Lexer;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -7,9 +8,10 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record IntValueExpression(
     long Value,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token SourceToken) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SourceToken.Span;
+    
     public BailaType GetBailaType() => BailaType.Int;
 
     public IValue Evaluate()

@@ -1,5 +1,6 @@
 ﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -7,14 +8,20 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record ForStatement(
-    string CounterVariable,
+    Token ForKeyword,
+    Token CounterVariableIdentifier,
+    Token EqualsToken,
     IExpression InitialValue,
+    Token ToSoftKeyword,
     IExpression FinalValue,
     IExpression StepValue,
-    IStatement Body,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    IStatement Body) : IStatement
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(
+        ForKeyword, CounterVariableIdentifier, EqualsToken, InitialValue, ToSoftKeyword, FinalValue, Body);
+
+    public string CounterVariable { get; init; } = CounterVariableIdentifier.Value!;
+
     public void Execute()
     {
         NameTable.PushScope();

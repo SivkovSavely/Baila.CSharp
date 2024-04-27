@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Runtime.Values;
+﻿using Baila.CSharp.Lexer;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -7,10 +8,11 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record PrefixUnaryExpression(
     PrefixUnaryExpression.Operation Op,
-    IExpression OperandExpression,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token OperatorToken,
+    IExpression OperandExpression) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(OperatorToken, OperandExpression);
+
     public readonly record struct Operation(string Op)
     {
         public static readonly Operation BitwiseNegation = new("~");
@@ -72,7 +74,7 @@ public record PrefixUnaryExpression(
     {
         return $"PrefixUnaryExpression({Op} {OperandExpression})";
     }
-    
+
     private (Operator op, Func<IValue, IValue> callback) GetOperator(PrefixUnaryExpression expression)
     {
         var (op, callback) = UnaryOperators.FirstOrDefault(operatorCallbackPair =>

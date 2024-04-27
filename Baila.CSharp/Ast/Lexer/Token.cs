@@ -1,12 +1,15 @@
-﻿namespace Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Ast.Syntax;
 
-public record Token
+namespace Baila.CSharp.Lexer;
+
+public record Token : ISyntaxNode
 {
-    public Token(Cursor cursor, TokenType type, string? value = null)
+    public Token(string filename, SyntaxNodeSpan span, TokenType type, string? value = null)
     {
-        Cursor = cursor;
         Type = type;
         Value = value;
+        Filename = filename;
+        Span = span;
 
         if (type.HasMeaningfulValue && value is null)
         {
@@ -19,14 +22,8 @@ public record Token
         return Type.HasMeaningfulValue ? Value! : Type.Type;
     }
 
-    public Cursor Cursor { get; }
     public TokenType Type { get; }
     public string? Value { get; }
-
-    public void Deconstruct(out Cursor cursor, out TokenType type, out string? value)
-    {
-        cursor = Cursor;
-        type = Type;
-        value = Value;
-    }
+    public string Filename { get; init; }
+    public SyntaxNodeSpan Span { get; init; }
 }

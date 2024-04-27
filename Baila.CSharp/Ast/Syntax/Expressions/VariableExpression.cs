@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -7,9 +8,10 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record VariableExpression(
     string Name,
-    string Filename,
-    SyntaxNodeSpan Span) : IExpression
+    Token IdentifierToken) : IExpression
 {
+    public SyntaxNodeSpan Span { get; init; } = IdentifierToken.Span;
+
     public string Stringify()
     {
         return Name;

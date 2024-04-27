@@ -1,6 +1,7 @@
 ﻿using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -8,13 +9,19 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record FunctionDefineStatement(
-    string Name,
+    Token FunctionKeyword,
+    Token NameIdentifier,
+    Token? LeftParenthesisParameterListToken,
     List<FunctionParameter> Parameters,
-    IStatement Body,
+    Token? RightParenthesisParameterListToken,
     BailaType? ReturnType,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    IStatement Body) : IStatement
 {
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.MergeWithNulls(
+        FunctionKeyword, NameIdentifier, LeftParenthesisParameterListToken, RightParenthesisParameterListToken, Body);
+
+    public string Name { get; } = NameIdentifier.Value!;
+
     public void Execute()
     {
         // We define the function in the preprocessing stage.

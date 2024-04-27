@@ -1,14 +1,18 @@
 ﻿using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.ControlFlowExceptions;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;
 
 public record ReturnStatement(
-    IExpression? ReturnExpression,
-    string Filename,
-    SyntaxNodeSpan Span) : IStatement
+    Token ReturnToken,
+    IExpression? ReturnExpression) : IStatement
 {
+    public SyntaxNodeSpan Span { get; init; } = ReturnExpression != null
+        ? SyntaxNodeSpan.Merge(ReturnToken, ReturnExpression)
+        : ReturnToken.Span;
+
     public void Execute()
     {
         throw new ControlFlowReturnException(ReturnExpression?.Evaluate());

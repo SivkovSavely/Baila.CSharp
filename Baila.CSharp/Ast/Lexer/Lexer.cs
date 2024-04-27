@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Baila.CSharp.Ast.Diagnostics;
+using Baila.CSharp.Ast.Syntax;
 
 namespace Baila.CSharp.Lexer;
 
@@ -9,6 +10,7 @@ public class Lexer(
     LexerMode mode = LexerMode.Regular,
     CancellationToken? cancellationToken = null)
 {
+    private int _startColumn = 1;
     private int _position = 0;
     private int _column = 1;
     private int _line = 1;
@@ -171,6 +173,7 @@ public class Lexer(
 
         while (HasChars())
         {
+            _startColumn = _column;
             var currentChar = Current();
             var nextChar = Peek(1);
 
@@ -498,10 +501,10 @@ public class Lexer(
                     isTokenizingSimpleIdentifierInterpolation = false;
                     if (interpolatedStringTokens!.Count != 0)
                     {
-                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
+                        interpolatedStringTokens.Add(CreateToken(TokenType.Comma));
                     }
                     interpolatedStringTokens.Add(
-                        new Token(CreateCursor(), TokenType.Identifier, _buffer.ToString()));
+                        CreateToken(TokenType.Identifier, _buffer.ToString()));
                     _buffer.Clear();
                     continue;
                 }
@@ -523,11 +526,10 @@ public class Lexer(
                     {
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
+                            interpolatedStringTokens.Add(CreateToken(TokenType.Comma));
                         }
                         interpolatedStringTokens.Add(
-                            new Token(
-                                CreateCursor(),
+                            CreateToken(
                                 mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
                                     ? quoteChar == '\''
                                         ? TokenType.SingleQuoteStringLiteral
@@ -547,10 +549,10 @@ public class Lexer(
                     {
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
+                            interpolatedStringTokens.Add(CreateToken(TokenType.Comma));
                         }
                         interpolatedStringTokens.Add(
-                            new Token(CreateCursor(), TokenType.StringLiteral, _buffer.ToString()));
+                            CreateToken(TokenType.StringLiteral, _buffer.ToString()));
                         _buffer.Clear();
                     }
 
@@ -574,7 +576,7 @@ public class Lexer(
 
                         if (interpolatedStringTokens.Count != 0)
                         {
-                            interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
+                            interpolatedStringTokens.Add(CreateToken(TokenType.Comma));
                         }
 
                         var lexer = new Lexer(
@@ -584,9 +586,9 @@ public class Lexer(
                                 ? LexerMode.HighlightingInterpolatedString
                                 : LexerMode.InterpolatedString);
                         var expressionTokens = lexer.Tokenize();
-                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.LeftParen));
+                        interpolatedStringTokens.Add(CreateToken(TokenType.LeftParen));
                         interpolatedStringTokens.AddRange(expressionTokens);
-                        interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.RightParen));
+                        interpolatedStringTokens.Add(CreateToken(TokenType.RightParen));
                         _buffer.Clear();
                     }
 
@@ -656,11 +658,10 @@ public class Lexer(
             {
                 if (interpolatedStringTokens!.Count != 0)
                 {
-                    interpolatedStringTokens.Add(new Token(CreateCursor(), TokenType.Comma));
+                    interpolatedStringTokens.Add(CreateToken(TokenType.Comma));
                 }
                 interpolatedStringTokens.Add(
-                    new Token(
-                        CreateCursor(),
+                    CreateToken(
                         mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString
                             ? quoteChar == '"'
                                 ? TokenType.DoubleQuoteStringLiteral
@@ -844,9 +845,15 @@ public class Lexer(
         AddToken(TokenType.RegexLiteral, $"/{_buffer}/{flags}");
     }
 
+    private Token CreateToken(TokenType type, string? value = null)
+    {
+        var tokenSpan = new SyntaxNodeSpan(_filename, _line, _startColumn, 1, _column - _startColumn + 1);
+        return new Token(_filename, tokenSpan, type, value);
+    }
+
     private void AddToken(TokenType type, string? value = null)
     {
-        _tokens.Add(new Token(CreateCursor(), type, value));
+        _tokens.Add(CreateToken(type, value));
     }
 
     private bool IsIdentifierStart(char ch)

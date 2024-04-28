@@ -22,8 +22,12 @@ public static class Interpreter
                 var previousColor = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
 
+                Console.WriteLine();
                 Console.Write($"[{diagnostic.GetCode()}] Syntax error: ");
                 Console.WriteLine(diagnostic.GetErrorMessage());
+
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine(diagnostic.GetFilename());
 
                 Console.ForegroundColor = previousColor;
 
@@ -44,7 +48,18 @@ public static class Interpreter
                     Console.Write(new string(' ', lineOffset));
                     Console.Write(" | ");
                     Console.Write(new string(' ', diagnosticLineSpan.StartColumn - 1));
-                    Console.WriteLine(new string('^', diagnosticLineSpan.Length));
+                    Console.Write(new string('^', diagnosticLineSpan.Length));
+                    
+                    if (diagnosticLineSpan.Length == 1)
+                    {
+                        Console.WriteLine(
+                            $"-- {diagnosticLineSpan.StartColumn}");
+                    }
+                    else
+                    {
+                        Console.WriteLine(
+                            $"-- {diagnosticLineSpan.StartColumn}..{diagnosticLineSpan.StartColumn + diagnosticLineSpan.Length - 1}");
+                    }
                 }
             }
         }

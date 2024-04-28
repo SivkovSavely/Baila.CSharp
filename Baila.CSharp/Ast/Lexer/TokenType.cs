@@ -171,4 +171,6 @@ public record TokenType(
     public static readonly TokenType PrivateStringConcat = new("[[string_concat]]");
     public static readonly TokenType PrivateStringConcatStart = new("[[string_concat_start]]");
     public static readonly TokenType PrivateStringConcatEnd = new("[[string_concat_end]]");
+
+    public override string ToString() => Type;
 }

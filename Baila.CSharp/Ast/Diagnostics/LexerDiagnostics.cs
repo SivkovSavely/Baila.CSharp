@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Ast.Syntax;
+using Baila.CSharp.Lexer;
 
 namespace Baila.CSharp.Ast.Diagnostics;
 
@@ -34,23 +35,30 @@ public class LexerDiagnostics
             cursor,
             line);
 
-    public static LexerDiagnostic BL0006_UnclosedString(Cursor cursor, string line) =>
+    public static LexerDiagnostic BL0006_UnclosedString(SyntaxNodeSpan span, string line) =>
         new(
             "unclosed string literal",
-            cursor,
+            span,
             line);
 }
 
 public class LexerDiagnostic : IDiagnostic
 {
     public string Message { get; }
-    public Cursor Cursor { get; }
+    public SyntaxNodeSpan Span { get; }
     public string Line { get; }
 
     internal LexerDiagnostic(string message, Cursor cursor, string line)
     {
         Message = message;
-        Cursor = cursor;
+        Span = new SyntaxNodeSpan(cursor.Filename, cursor.Line, cursor.Column, 1, 1);
+        Line = line;
+    }
+
+    internal LexerDiagnostic(string message, SyntaxNodeSpan span, string line)
+    {
+        Message = message;
+        Span = span;
         Line = line;
     }
 
@@ -61,13 +69,13 @@ public class LexerDiagnostic : IDiagnostic
 
     public string GetFilename()
     {
-        return Cursor.Filename;
+        return Span.Filename;
     }
 
     public IEnumerable<DiagnosticLineSpan> GetLines()
     {
         return [
-            new DiagnosticLineSpan(Line, Cursor.Line, Cursor.Column, 1)
+            new DiagnosticLineSpan(Line, Span.StartLine, Span.StartColumn, Span.SyntaxLength)
         ];
     }
 

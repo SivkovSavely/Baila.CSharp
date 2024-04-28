@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -7,10 +8,12 @@ using Baila.CSharp.Visitors;
 namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record StringConcatExpression(
+    Token StartToken,
     IEnumerable<string> FixedStrings,
-    IEnumerable<IExpression> Expressions) : IExpression
+    IEnumerable<IExpression> Expressions,
+    Token EndToken) : IExpression
 {
-    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.ThrowEmpty;
+    public SyntaxNodeSpan Span { get; init; } = SyntaxNodeSpan.Merge(StartToken, EndToken);
     
     public BailaType GetBailaType() => BailaType.String;
 

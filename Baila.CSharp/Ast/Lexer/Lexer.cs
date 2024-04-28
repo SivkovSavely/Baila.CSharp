@@ -421,7 +421,7 @@ public class Lexer(
             current = Next();
         }
 
-        AddToken(TokenType.NumberLiteral, _buffer.ToString());
+        AddToken(TokenType.NumberLiteral, _buffer.ToString(), tokenLengthOffset: -1);
     }
 
     private void TokenizeBinaryNumber()
@@ -441,7 +441,7 @@ public class Lexer(
             current = Next();
         }
 
-        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 2).ToString());
+        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 2).ToString(), tokenLengthOffset: -1);
     }
 
     private void TokenizeOctalNumber()
@@ -461,7 +461,7 @@ public class Lexer(
             current = Next();
         }
 
-        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 8).ToString());
+        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 8).ToString(), tokenLengthOffset: -1);
     }
 
     private void TokenizeHexadecimalNumber()
@@ -481,12 +481,16 @@ public class Lexer(
             current = Next();
         }
 
-        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 16).ToString());
+        AddToken(TokenType.NumberLiteral, Convert.ToInt64(_buffer.ToString(), 16).ToString(), tokenLengthOffset: -1);
     }
 
     private void TokenizeSingleOrDoubleString(char quoteChar)
     {
         _buffer.Clear();
+        var stringConcatStartColumn = _startColumn;
+        var stringConcatEndColumn = _startColumn;
+        var fixedStringLiteralStartColumn = _startColumn;
+        var expressionStartColumn = _startColumn;
         var currentChar = Current();
         var unclosedCurlies = 0;
         var isInterpolated = false;
@@ -517,11 +521,14 @@ public class Lexer(
             switch (currentChar)
             {
                 case '$' when Peek(1) == '{':
+                    // Add the fixed string literal that was before ${, if there was none, still add an empty one
                     isInterpolated = true;
                     Next(); // skip $
                     currentChar = Next(); // skip {
                     unclosedCurlies++;
                     interpolatedStringTokens ??= [];
+                    _startColumn = fixedStringLiteralStartColumn;
+                    expressionStartColumn = _column;
                     if (_buffer.Length > 0)
                     {
                         if (interpolatedStringTokens.Count != 0)
@@ -558,6 +565,7 @@ public class Lexer(
 
                     continue;
                 case '}':
+                    var expressionEndColumn = _column - 1; // not counting the }
                     currentChar = Next(); // skip }
                     unclosedCurlies--;
                     if (unclosedCurlies == 0)
@@ -586,9 +594,27 @@ public class Lexer(
                                 ? LexerMode.HighlightingInterpolatedString
                                 : LexerMode.InterpolatedString);
                         var expressionTokens = lexer.Tokenize();
-                        interpolatedStringTokens.Add(CreateToken(TokenType.LeftParen));
-                        interpolatedStringTokens.AddRange(expressionTokens);
-                        interpolatedStringTokens.Add(CreateToken(TokenType.RightParen));
+                        interpolatedStringTokens.Add(
+                            CreateToken(
+                                    TokenType.LeftParen,
+                                    syntaxNodeSpanOverride: SyntaxNodeSpan.FromEnd(
+                                        _filename, _line, expressionStartColumn, _line, expressionStartColumn)));
+                        interpolatedStringTokens.AddRange(
+                            expressionTokens.Select(
+                                expressionToken => CreateToken(
+                                    expressionToken.Type,
+                                    expressionToken.Value,
+                                    syntaxNodeSpanOverride: SyntaxNodeSpan.FromEnd(
+                                        _filename,
+                                        expressionToken.Span.StartLine,
+                                        expressionToken.Span.StartColumn + expressionStartColumn - 1,
+                                        expressionToken.Span.EndLine,
+                                        expressionToken.Span.EndColumn + expressionStartColumn - 1))));
+                        interpolatedStringTokens.Add(
+                            CreateToken(
+                                    TokenType.RightParen,
+                                    syntaxNodeSpanOverride: SyntaxNodeSpan.FromEnd(
+                                        _filename, _line, expressionEndColumn, _line, expressionEndColumn)));
                         _buffer.Clear();
                     }
 
@@ -634,7 +660,10 @@ public class Lexer(
             }
 
             if (currentChar == quoteChar && unclosedCurlies == 0)
+            {
+                stringConcatEndColumn = _column;
                 break;
+            }
             if (currentChar == '\0')
             {
                 AddDiagnostic(LexerDiagnostics.BL0006_UnclosedString);
@@ -643,6 +672,8 @@ public class Lexer(
             _buffer.Append(currentChar);
             currentChar = Next();
         }
+
+        var line = _line;
 
         if (unclosedCurlies != 0)
         {
@@ -670,11 +701,17 @@ public class Lexer(
                         _buffer.ToString()));
                 _buffer.Clear();
             }
-            
+
             AddToken(TokenType.PrivateStringConcat);
-            AddToken(TokenType.PrivateStringConcatStart);
+            AddToken(
+                TokenType.PrivateStringConcatStart,
+                syntaxNodeSpanOverride: SyntaxNodeSpan.FromEnd(
+                    _filename, line, stringConcatStartColumn, line, stringConcatStartColumn));
             _tokens.AddRange(interpolatedStringTokens!);
-            AddToken(TokenType.PrivateStringConcatEnd);
+            AddToken(
+                TokenType.PrivateStringConcatEnd,
+                syntaxNodeSpanOverride: SyntaxNodeSpan.FromEnd(
+                    _filename, line, stringConcatEndColumn, line, stringConcatEndColumn));
         }
         else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
         {
@@ -686,7 +723,7 @@ public class Lexer(
         }
         else
         {
-            AddToken(TokenType.StringLiteral, _buffer.ToString());
+            AddToken(TokenType.StringLiteral, _buffer.ToString(), tokenLengthOffset: -1);
         }
     }
 
@@ -845,15 +882,15 @@ public class Lexer(
         AddToken(TokenType.RegexLiteral, $"/{_buffer}/{flags}");
     }
 
-    private Token CreateToken(TokenType type, string? value = null)
+    private Token CreateToken(TokenType type, string? value = null, int tokenLengthOffset = 0, SyntaxNodeSpan? syntaxNodeSpanOverride = null)
     {
-        var tokenSpan = new SyntaxNodeSpan(_filename, _line, _startColumn, 1, _column - _startColumn + 1);
+        var tokenSpan = syntaxNodeSpanOverride ?? new SyntaxNodeSpan(_filename, _line, _startColumn, 1, _column - _startColumn + 1 + tokenLengthOffset);
         return new Token(_filename, tokenSpan, type, value);
     }
 
-    private void AddToken(TokenType type, string? value = null)
+    private void AddToken(TokenType type, string? value = null, int tokenLengthOffset = 0, SyntaxNodeSpan? syntaxNodeSpanOverride = null)
     {
-        _tokens.Add(CreateToken(type, value));
+        _tokens.Add(CreateToken(type, value, tokenLengthOffset, syntaxNodeSpanOverride));
     }
 
     private bool IsIdentifierStart(char ch)
@@ -881,7 +918,7 @@ public class Lexer(
         if (Current() == '\n')
         {
             _line++;
-            _column = 0;
+            _column = 1;
             // _position++; // skip newline
         }
 

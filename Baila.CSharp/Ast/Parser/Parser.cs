@@ -31,11 +31,6 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         {
             var stmt = Statement();
             result.AddStatement(stmt);
-        
-            /*AddDiagnostic(
-                ParserDiagnostics.BP0000_Test,
-                stmt,
-                underlinedNode: stmt);*/
         }
 
         return result;
@@ -453,11 +448,6 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
         Trace("Expression");
         var expr = Assignment();
-        
-        /*AddDiagnostic(
-            ParserDiagnostics.BP0000_Test,
-            expr,
-            underlinedNode: expr);*/
         
         return expr;
     }
@@ -891,9 +881,10 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             var expressions = new List<IExpression>();
             bool? expressionWasLast = null;
 
-            Consume(TokenType.PrivateStringConcatStart);
+            var startToken = Consume(TokenType.PrivateStringConcatStart);
+            Token endToken;
 
-            while (!Match(TokenType.PrivateStringConcatEnd))
+            while (true)
             {
                 if (Get().Type == TokenType.StringLiteral)
                 {
@@ -910,12 +901,12 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
                     expressionWasLast = true;
                 }
 
-                if (Match(TokenType.PrivateStringConcatEnd)) break;
+                if (Match(TokenType.PrivateStringConcatEnd, out endToken)) break;
 
                 Consume(TokenType.Comma);
             }
             
-            result = new StringConcatExpression(fixedStrings, expressions);
+            result = new StringConcatExpression(startToken, fixedStrings, expressions, endToken);
         }
         // true and false
         else if (Match(TokenType.True, out var trueLiteralToken))
@@ -953,10 +944,10 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             var leftParen = Consume(TokenType.LeftParen);
             Token? rightParen = null;
 
-            while (!Match(TokenType.EndOfFile) && !Match(TokenType.RightParen, out rightParen))
+            while (!Match(TokenType.EndOfFile))
             {
                 args.Add(Expression());
-                if (Match(TokenType.RightParen))
+                if (Match(TokenType.RightParen, out rightParen))
                 {
                     break;
                 }

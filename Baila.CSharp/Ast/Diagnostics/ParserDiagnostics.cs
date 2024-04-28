@@ -7,27 +7,32 @@ public class ParserDiagnostics
 {
     public static ParserDiagnostic BP0000_Test(ISyntaxNode node, string[] relevantSourceLines) =>
         new(
+            "BP0000",
             $"test diagnostic for {node.GetType().Name}",
             node,
             relevantSourceLines);
     public static ParserDiagnostic BP0001_UnexpectedToken(Token unexpectedToken, TokenType[] expectedTokenTypes, string[] relevantSourceLines) =>
         new(
+            "BP0001",
             $"unexpected token '{unexpectedToken}', expected tokens: {string.Join(", ", expectedTokenTypes.Select(x => $"'{x}'"))}",
             unexpectedToken,
             relevantSourceLines);
 
     public static ParserDiagnostic BP0001_UnexpectedToken(Token unexpectedToken, string expected, string[] relevantSourceLines) =>
         new(
+            "BP0001",
             $"unexpected token '{unexpectedToken}', expected {expected}",
             unexpectedToken,
             relevantSourceLines);
     public static ParserDiagnostic BP0002_ExpectedToInForLoop(Token unexpectedToken, string[] relevantSourceLines) =>
         new(
+            "BP0002",
             "'to' expected in 'for' loop. For C-like style of 'for' loop, please use 'while' instead",
             unexpectedToken,
             relevantSourceLines);
     public static ParserDiagnostic BP0003_CountNotInferTypeOfNumber(Token malformedNumber, string[] relevantSourceLines) =>
         new(
+            "BP0003",
             "could not infer type of the number",
             malformedNumber,
             relevantSourceLines);
@@ -36,14 +41,21 @@ public class ParserDiagnostics
 public class ParserDiagnostic : IDiagnostic
 {
     private readonly string[] _relevantSourceLines;
+    public string Code { get; }
     public string Message { get; }
     public ISyntaxNode SyntaxNode { get; }
 
-    internal ParserDiagnostic(string message, ISyntaxNode syntaxNode, string[] relevantSourceLines)
+    internal ParserDiagnostic(string code, string message, ISyntaxNode syntaxNode, string[] relevantSourceLines)
     {
         _relevantSourceLines = relevantSourceLines;
+        Code = code;
         Message = message;
         SyntaxNode = syntaxNode;
+    }
+
+    public string GetCode()
+    {
+        return Code;
     }
 
     public string GetErrorMessage()

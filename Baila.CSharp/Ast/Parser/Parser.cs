@@ -29,8 +29,19 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
 
         while (!Match(TokenType.EndOfFile))
         {
-            var stmt = Statement();
-            result.AddStatement(stmt);
+            try
+            {
+                var stmt = Statement();
+                result.AddStatement(stmt);
+            }
+            catch (ParseException)
+            {
+                var recoverSuccess = Recover();
+                if (!recoverSuccess)
+                {
+                    throw;
+                }
+            }
         }
 
         return result;
@@ -942,17 +953,19 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
             Trace("LeftParen after");
             var args = new List<IExpression>();
             var leftParen = Consume(TokenType.LeftParen);
-            Token? rightParen = null;
 
-            while (!Match(TokenType.EndOfFile))
+            if (!Match(TokenType.RightParen, out var rightParen))
             {
-                args.Add(Expression());
-                if (Match(TokenType.RightParen, out rightParen))
+                while (!Match(TokenType.EndOfFile))
                 {
-                    break;
-                }
+                    args.Add(Expression());
+                    if (Match(TokenType.RightParen, out rightParen))
+                    {
+                        break;
+                    }
 
-                Consume(TokenType.Comma);
+                    Consume(TokenType.Comma);
+                }
             }
 
             result = new FunctionCallExpression(result, leftParen, args, rightParen);
@@ -1064,6 +1077,30 @@ public class Parser(string filename, string source, List<Token> tokens, Cancella
         var endLineInclusive = node.Span.EndLine;
         var lines = source.Split("\n")[(startLine - 1)..endLineInclusive]; // TODO
         return lines;
+    }
+
+    private bool Recover()
+    {
+        var pos = _position;
+        var success = false;
+        while (_position < tokens.Count)
+        {
+            _position++;
+            try
+            {
+                var preParsePosition = _position;
+                Statement();
+                success = true;
+                _position = preParsePosition;
+                break;
+            }
+            catch (ParseException)
+            {
+                // Ignore parse exceptions here
+            }
+        }
+
+        return success;
     }
 
     private void Trace(string message)

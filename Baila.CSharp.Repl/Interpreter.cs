@@ -22,7 +22,7 @@ public static class Interpreter
                 var previousColor = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.Write("Syntax error: ");
+                Console.Write($"[{diagnostic.GetCode()}] Syntax error: ");
                 Console.WriteLine(diagnostic.GetErrorMessage());
 
                 Console.ForegroundColor = previousColor;

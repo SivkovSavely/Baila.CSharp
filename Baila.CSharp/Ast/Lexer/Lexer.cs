@@ -11,8 +11,19 @@ public class Lexer(
     CancellationToken? cancellationToken = null)
 {
     private int _startColumn = 1;
-    private int _position = 0;
+
+    private int _position;
+    private int _previousColumn = 1;
     private int _column = 1;
+    private int Column
+    {
+        get => _column;
+        set
+        {
+            _previousColumn = _column;
+            _column = value;
+        }
+    }
     private int _line = 1;
     private string _filename = filename;
     private readonly List<Token> _tokens = [];
@@ -173,7 +184,7 @@ public class Lexer(
 
         while (HasChars())
         {
-            _startColumn = _column;
+            _startColumn = Column;
             var currentChar = Current();
             var nextChar = Peek(1);
 
@@ -291,19 +302,17 @@ public class Lexer(
             }
             else if (currentChar == '\n')
             {
-                if (parenthesisParity == 0 && bracketParity == 0)
+                if (parenthesisParity <= 0 && bracketParity <= 0)
                 {
-                    Next();
                     if (_tokens.Count > 0 && mode != LexerMode.InterpolatedString)
                     {
-                        var lastToken = _tokens.Last();
-                        if (lastToken.Type != TokenType.LeftParen
-                            && lastToken.Type != TokenType.LeftBracket
-                            && lastToken.Type != TokenType.LeftCurly)
-                        {
-                            AddToken(TokenType.EndOfLine, "EOL");
-                        }
+                        AddToken(
+                            TokenType.EndOfLine,
+                            "EOL",
+                            syntaxNodeSpanOverride: new SyntaxNodeSpan(
+                                _filename, _line - 1, _previousColumn, 1, 1));
                     }
+                    Next();
                 }
                 else if (mode is LexerMode.Highlighting or LexerMode.HighlightingInterpolatedString)
                 {
@@ -496,7 +505,7 @@ public class Lexer(
         var isInterpolated = false;
         var isTokenizingSimpleIdentifierInterpolation = false;
         List<Token>? interpolatedStringTokens = null;
-        var previousColumn = _column;
+        var previousColumn = Column;
         var previousLine = _line;
         while (true)
         {
@@ -516,7 +525,7 @@ public class Lexer(
                 }
 
                 _buffer.Append(currentChar);
-                previousColumn = _column;
+                previousColumn = Column;
                 previousLine = _line;
                 currentChar = Next();
                 continue;
@@ -532,7 +541,7 @@ public class Lexer(
                     unclosedCurlies++;
                     interpolatedStringTokens ??= [];
                     _startColumn = fixedStringLiteralStartColumn;
-                    expressionStartColumn = _column;
+                    expressionStartColumn = Column;
                     if (_buffer.Length > 0)
                     {
                         if (interpolatedStringTokens.Count != 0)
@@ -569,7 +578,7 @@ public class Lexer(
 
                     continue;
                 case '}':
-                    var expressionEndColumn = _column - 1; // not counting the }
+                    var expressionEndColumn = Column - 1; // not counting the }
                     currentChar = Next(); // skip }
                     unclosedCurlies--;
                     if (unclosedCurlies == 0)
@@ -659,7 +668,7 @@ public class Lexer(
                             break;
                     }
 
-                    previousColumn = _column;
+                    previousColumn = Column;
                     previousLine = _line;
                     currentChar = Next();
                     continue;
@@ -667,7 +676,7 @@ public class Lexer(
 
             if (currentChar == quoteChar && unclosedCurlies == 0)
             {
-                stringEndColumn = _column;
+                stringEndColumn = Column;
                 break;
             }
             if (currentChar is '\n' or '\0')
@@ -676,7 +685,7 @@ public class Lexer(
                 break;
             }
             _buffer.Append(currentChar);
-            previousColumn = _column;
+            previousColumn = Column;
             previousLine = _line;
             currentChar = Next();
         }
@@ -738,7 +747,7 @@ public class Lexer(
     private void TokenizeVerbatimString()
     {
         _buffer.Clear();
-        var startColumn = _column;
+        var startColumn = Column;
         var currentChar = Current();
         while (HasChars())
         {
@@ -755,7 +764,7 @@ public class Lexer(
                 break;
             if (currentChar == '\0')
             {
-                AddDiagnosticWithSpan(LexerDiagnostics.BL0006_UnclosedString, _line, startColumn, _column);
+                AddDiagnosticWithSpan(LexerDiagnostics.BL0006_UnclosedString, _line, startColumn, Column);
                 break;
             }
             _buffer.Append(currentChar);
@@ -897,7 +906,7 @@ public class Lexer(
 
     private Token CreateToken(TokenType type, string? value = null, int tokenLengthOffset = 0, SyntaxNodeSpan? syntaxNodeSpanOverride = null)
     {
-        var tokenSpan = syntaxNodeSpanOverride ?? new SyntaxNodeSpan(_filename, _line, _startColumn, 1, _column - _startColumn + 1 + tokenLengthOffset);
+        var tokenSpan = syntaxNodeSpanOverride ?? new SyntaxNodeSpan(_filename, _line, _startColumn, 1, Column - _startColumn + 1 + tokenLengthOffset);
         return new Token(_filename, tokenSpan, type, value);
     }
 
@@ -926,12 +935,12 @@ public class Lexer(
         cancellationToken?.ThrowIfCancellationRequested();
 
         _position++;
-        _column++;
+        Column++;
 
         if (Current() == '\n')
         {
             _line++;
-            _column = 1;
+            Column = 0;
             // _position++; // skip newline
         }
 
@@ -951,7 +960,7 @@ public class Lexer(
         return pos < _source.Length ? _source[pos] : '\0';
     }
 
-    private Cursor CreateCursor(int columnOffset = 0) => new(_position, _column + columnOffset, _line, _filename);
+    private Cursor CreateCursor(int columnOffset = 0) => new(_position, Column + columnOffset, _line, _filename);
 
     private SyntaxNodeSpan CreateSpan(int line, int startColumn, int endColumn) => SyntaxNodeSpan.FromEnd(
         _filename, line, startColumn, line, endColumn);

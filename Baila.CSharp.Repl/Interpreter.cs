@@ -1,4 +1,5 @@
 ﻿using Baila.CSharp.Ast.Diagnostics;
+using Baila.CSharp.Ast.Parser;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Visitors;
@@ -69,10 +70,14 @@ public static class Interpreter
 
     public static Statements Compile(string sourceCode, string filename, bool showTokens = false, bool showAst = false)
     {
+        sourceCode = sourceCode
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
+
+        var sourceLines = sourceCode.Split("\n");
+        
         var lexer = new Lexer.Lexer(
-            sourceCode
-                .Replace("\r\n", "\n")
-                .Replace("\r", "\n"),
+            sourceCode,
             filename);
         var tokens = lexer.Tokenize();
 
@@ -103,7 +108,15 @@ public static class Interpreter
             throw new ParseException(parser.Diagnostics);
         }
 
-        new FunctionDefiningVisitor().VisitStatements(ast);
+        var typeCheckingVisitor = new TypeCheckingVisitor([], sourceLines);
+        typeCheckingVisitor.VisitStatements(ast);
+
+        if (typeCheckingVisitor.Diagnostics.Any())
+        {
+            throw new ParseException(typeCheckingVisitor.Diagnostics);
+        }
+
+        new RuntimeFunctionDefiningVisitor().VisitStatements(ast);
 
 #if DEBUG
         if (showAst)
@@ -113,6 +126,7 @@ public static class Interpreter
             Console.WriteLine($"  {ast}");
             Console.ResetColor();
         }
+
 #endif
         return ast;
     }

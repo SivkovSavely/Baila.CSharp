@@ -8,23 +8,23 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record BoolValueExpression(
     bool Value,
-    Token SourceLiteral) : IExpression
+    Token SourceLiteral) : ValueExpression(SourceLiteral)
 {
     public SyntaxNodeSpan Span { get; init; } = SourceLiteral.Span;
     
-    public BailaType GetBailaType() => BailaType.Bool;
+    public override BailaType GetBailaType() => BailaType.Bool;
 
-    public IValue Evaluate()
+    public override IValue Evaluate()
     {
         return new BooleanValue(Value);
     }
 
-    public void AcceptVisitor(VisitorBase visitor)
+    public override void AcceptVisitor(VisitorBase visitor)
     {
         visitor.VisitBoolValueExpression(this);
     }
 
-    public string Stringify()
+    public override string Stringify()
     {
         return Value ? "true" : "false";
     }

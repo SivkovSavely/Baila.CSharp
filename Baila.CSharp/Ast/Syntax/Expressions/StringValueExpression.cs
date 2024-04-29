@@ -8,23 +8,23 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record StringValueExpression(
     string Value,
-    Token? LiteralToken = null) : IExpression
+    Token? LiteralToken = null) : ValueExpression(LiteralToken ?? new Token("", SyntaxNodeSpan.Empty, TokenType.StringLiteral, ""))
 {
-    public SyntaxNodeSpan Span { get; init; } = LiteralToken?.Span ?? SyntaxNodeSpan.Empty;
+    public override SyntaxNodeSpan Span { get; init; } = LiteralToken?.Span ?? SyntaxNodeSpan.Empty;
     
-    public BailaType GetBailaType() => BailaType.String;
+    public override BailaType GetBailaType() => BailaType.String;
 
-    public IValue Evaluate()
+    public override IValue Evaluate()
     {
         return new StringValue(Value);
     }
 
-    public void AcceptVisitor(VisitorBase visitor)
+    public override void AcceptVisitor(VisitorBase visitor)
     {
         visitor.VisitStringValueExpression(this);
     }
 
-    public string Stringify()
+    public override string Stringify()
     {
         return Value;
     }

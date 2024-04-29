@@ -9,23 +9,21 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record FloatValueExpression(
     double Value,
-    Token SourceLiteral) : IExpression
+    Token SourceLiteral) : ValueExpression(SourceLiteral)
 {
-    public SyntaxNodeSpan Span { get; init; } = SourceLiteral.Span;
-    
-    public BailaType GetBailaType() => BailaType.Float;
+    public override BailaType GetBailaType() => BailaType.Float;
 
-    public IValue Evaluate()
+    public override IValue Evaluate()
     {
         return new FloatValue(Value);
     }
 
-    public void AcceptVisitor(VisitorBase visitor)
+    public override void AcceptVisitor(VisitorBase visitor)
     {
         visitor.VisitFloatValueExpression(this);
     }
 
-    public string Stringify()
+    public override string Stringify()
     {
         return Value.ToString(CultureInfo.InvariantCulture);
     }

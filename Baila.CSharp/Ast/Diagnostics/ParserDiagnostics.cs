@@ -1,5 +1,9 @@
-﻿using Baila.CSharp.Ast.Syntax;
+﻿using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Ast.Syntax;
+using Baila.CSharp.Ast.Syntax.Expressions;
+using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Lexer;
+using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Ast.Diagnostics;
 
@@ -35,6 +39,60 @@ public class ParserDiagnostics
             "BP0003",
             "could not infer type of the number",
             malformedNumber,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0004_CannotRedefineVariable(VariableDefineStatement statement, string[] relevantSourceLines) =>
+        new(
+            "BP0004",
+            $"cannot redefine variable '{statement.Name}'",
+            statement,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0005_CannotInferTypeOfVariable(VariableDefineStatement statement, string[] relevantSourceLines) =>
+        new(
+            "BP0005",
+            $"cannot infer type of an implicitly typed variable '{statement.Name}'",
+            statement,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0006_CannotRedefineConstant(ConstantDefineStatement statement, string[] relevantSourceLines) =>
+        new(
+            "BP0006",
+            $"cannot redefine constant '{statement.Name}'",
+            statement,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0007_OverloadExists(FunctionDefineStatement statement, FunctionOverload overload, string[] relevantSourceLines) =>
+        new(
+            "BP0007",
+            $"overload ({string.Join(", ", overload.Parameters.Select(x => $"{x.Name}: {x.Type}"))}) already exists",
+            statement,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0008_VariableIsNotAFunction(string name, FunctionDefineStatement statement, string[] relevantSourceLines) =>
+        new(
+            "BP0008",
+            $"cannot define function '{name}': a variable with this name is already defined",
+            statement,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0009_SymbolIsNotDefined(string name, ISyntaxNode syntaxNode, string[] relevantSourceLines) =>
+        new(
+            "BP0009",
+            $"'{name}' is not defined",
+            syntaxNode,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0010_SymbolIsNotDefined(IExpression expression, string[] relevantSourceLines) =>
+        new(
+            "BP0010",
+            "expression is not callable",
+            expression,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0011_CannotConvertTypeFromAToB(IExpression expression, BailaType fromType, BailaType toType, string[] relevantSourceLines) =>
+        new(
+            "BP0011",
+            $"cannot convert from '{fromType}' to '{toType}'",
+            expression,
+            relevantSourceLines);
+    public static ParserDiagnostic BP0012_HaveToAssignValueToAnyVariable(string name, VariableDefineStatement statement, string[] relevantSourceLines) =>
+        new(
+            "BP0011",
+            $"variable '{name}' has to be assigned value because it has type 'Any'",
+            statement,
             relevantSourceLines);
 }
 

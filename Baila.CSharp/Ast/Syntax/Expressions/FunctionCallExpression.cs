@@ -22,11 +22,17 @@ public record FunctionCallExpression(
     {
         if (FunctionHolder is VariableExpression variableExpression)
         {
-            var member = NameTable.Get(variableExpression.Name);
+            /*var member = NameTable.Get(variableExpression.Name);
             var functionValue = member.Value as FunctionValue;
             var overload = FunctionValue.GetApplicableOverloads(
                 functionValue.Overloads,
                 CallArgs.Select(x => x.GetBailaType()).ToArray());
+            return overload.First().ReturnType;*/
+            var function = CompileTimeNameTable.GetFunction(variableExpression.Name);
+            if (function == null) return null;
+            var overload = FunctionValue.GetApplicableOverloads(
+                function.Overloads,
+                CallArgs.Select(arg => arg.GetBailaType()!).ToArray());
             return overload.First().ReturnType;
         }
         return FunctionHolder.GetBailaType();

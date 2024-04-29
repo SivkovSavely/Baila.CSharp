@@ -19,8 +19,8 @@ public record VariableExpression(
 
     public BailaType GetBailaType()
     {
-        var variable = NameTable.Get(Name);
-        return variable.Type;
+        var variable = CompileTimeNameTable.Get(Name);
+        return variable?.Type!;
     }
 
     public IValue Evaluate()

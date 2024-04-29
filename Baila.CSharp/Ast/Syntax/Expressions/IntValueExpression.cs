@@ -8,23 +8,21 @@ namespace Baila.CSharp.Ast.Syntax.Expressions;
 
 public record IntValueExpression(
     long Value,
-    Token SourceToken) : IExpression
+    Token SourceToken) : ValueExpression(SourceToken)
 {
-    public SyntaxNodeSpan Span { get; init; } = SourceToken.Span;
-    
-    public BailaType GetBailaType() => BailaType.Int;
+    public override BailaType GetBailaType() => BailaType.Int;
 
-    public IValue Evaluate()
+    public override IValue Evaluate()
     {
         return new IntValue(Value);
     }
 
-    public void AcceptVisitor(VisitorBase visitor)
+    public override void AcceptVisitor(VisitorBase visitor)
     {
         visitor.VisitIntValueExpression(this);
     }
 
-    public string Stringify()
+    public override string Stringify()
     {
         return Value.ToString();
     }

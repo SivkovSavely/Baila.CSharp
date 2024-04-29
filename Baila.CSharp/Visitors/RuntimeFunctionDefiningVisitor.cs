@@ -2,7 +2,7 @@
 
 namespace Baila.CSharp.Visitors;
 
-public class FunctionDefiningVisitor : VisitorBase
+public class RuntimeFunctionDefiningVisitor : VisitorBase
 {
     public override void VisitFunctionDefineStatement(FunctionDefineStatement stmt)
     {

@@ -3,9 +3,9 @@ using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;
 
-public class FunctionDefiningVisitorTests : TestsBase
+public class RuntimeFunctionDefiningVisitorTests : TestsBase
 {
-    public FunctionDefiningVisitorTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    public RuntimeFunctionDefiningVisitorTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
 

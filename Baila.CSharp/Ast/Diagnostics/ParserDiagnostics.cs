@@ -58,10 +58,10 @@ public class ParserDiagnostics
             $"cannot redefine constant '{statement.Name}'",
             statement,
             relevantSourceLines);
-    public static ParserDiagnostic BP0007_OverloadExists(FunctionDefineStatement statement, FunctionOverload overload, string[] relevantSourceLines) =>
+    public static ParserDiagnostic BP0007_OverloadExists(FunctionDefineStatement statement, FunctionOverload overload, FunctionOverload conflictingOverload, string[] relevantSourceLines) =>
         new(
             "BP0007",
-            $"overload ({string.Join(", ", overload.Parameters.Select(x => $"{x.Name}: {x.Type}"))}) already exists",
+            $"overload {overload} conflicts with overload {conflictingOverload}",
             statement,
             relevantSourceLines);
     public static ParserDiagnostic BP0008_VariableIsNotAFunction(string name, FunctionDefineStatement statement, string[] relevantSourceLines) =>

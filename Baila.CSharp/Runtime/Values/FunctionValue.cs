@@ -148,4 +148,39 @@ public class FunctionValue(string name = "") : IValue
         optionalParameter = null;
         return false;
     }
+
+    /// <summary>
+    /// Checks if the overload <see cref="overload"/> conflicts with any of the overloads specified in <see cref="overloads"/>.
+    /// </summary>
+    public static bool HasConflictingOverload(FunctionOverload overload, List<FunctionOverload> overloads, out FunctionOverload? conflictingOverload)
+    {
+        conflictingOverload = overloads.FirstOrDefault(o => o.Parameters
+            .Select(p => p.Type)
+            .SequenceEqual(
+                overload.Parameters
+                    .TakeWhile(p => p.DefaultValue == null)
+                    .Select(p => p.Type)));
+
+        if (conflictingOverload != null)
+        {
+            // The same parameter types is a conflicting overload
+            return true;
+        }
+
+        conflictingOverload = overloads.FirstOrDefault(
+            o => o.Parameters
+                .Select(p => p.Type)
+                .SequenceEqual(
+                    overload.Parameters.TakeWhile(p => p.DefaultValue == null).Select(p => p.Type)));
+
+        if (conflictingOverload != null)
+        {
+            // If there exists an overload with the same required parameters it is a conflicting overload
+            return true;
+        }
+
+        // Otherwise, it's fine
+        conflictingOverload = null;
+        return false;
+    }
 }

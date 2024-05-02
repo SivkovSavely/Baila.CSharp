@@ -30,17 +30,15 @@ public class CompileTimeNameTable
             _variables[name] = new MemberVariable(name, type, Immutable: true);
         }
 
-        public bool TryAddFunction(string name, FunctionOverload overload)
+        public bool TryAddFunction(string name, FunctionOverload overload, out FunctionOverload? conflictingOverload)
         {
             MemberFunction function;
 
             if (Exists(name))
             {
                 function = GetFunction(name)!;
-                var overloadArgTypes = overload.Parameters.Select(x => x.Type).ToArray();
-                var applicableOverloads = FunctionValue.GetApplicableOverloads(function.Overloads, overloadArgTypes);
-                
-                if (applicableOverloads.Count > 0)
+
+                if (FunctionValue.HasConflictingOverload(overload, function.Overloads, out conflictingOverload))
                 {
                     return false;
                 }
@@ -52,6 +50,7 @@ public class CompileTimeNameTable
             function = new MemberFunction(name, []);
             function.Overloads.Add(overload);
             _functions[name] = function;
+            conflictingOverload = null;
             return true;
         }
 
@@ -128,9 +127,9 @@ public class CompileTimeNameTable
         CurrentScope.AddConstant(name, type);
     }
 
-    public static bool TryAddFunction(string name, FunctionOverload overload)
+    public static bool TryAddFunction(string name, FunctionOverload overload, out FunctionOverload? conflictingOverload)
     {
-        return CurrentScope.TryAddFunction(name, overload);
+        return CurrentScope.TryAddFunction(name, overload, out conflictingOverload);
     }
 
     public static bool Exists(string name)

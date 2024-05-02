@@ -94,12 +94,13 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
             stmt.Parameters,
             stmt.ReturnType);
 
-        if (!CompileTimeNameTable.TryAddFunction(stmt.Name, overload))
+        if (!CompileTimeNameTable.TryAddFunction(stmt.Name, overload, out var conflictingOverload))
         {
             diagnostics.Add(
                 ParserDiagnostics.BP0007_OverloadExists(
                     stmt,
                     overload,
+                    conflictingOverload!,
                     GetRelevantSourceLines(stmt.Span)));
         }
     }

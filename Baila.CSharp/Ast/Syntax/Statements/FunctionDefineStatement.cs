@@ -58,12 +58,6 @@ public record FunctionDefineStatement(
                                     $"cannot be after an optional parameter '{optionalParameter!.Name}'");
             }
 
-            if (func.HasOverload(overload))
-            {
-                var pars = string.Join(", ", overload.Parameters.Select(x => x.ToString()));
-                throw new Exception($"Overload with parameters {pars} already exists");
-            }
-
             func.AddOverload(overload);
         }
     }

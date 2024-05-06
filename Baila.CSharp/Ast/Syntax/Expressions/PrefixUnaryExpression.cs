@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Lexer;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -65,11 +66,13 @@ public record PrefixUnaryExpression(
         visitor.VisitPrefixUnaryExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return $"{Op} {OperandExpression.Stringify()}";
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"PrefixUnaryExpression({Op} {OperandExpression})";

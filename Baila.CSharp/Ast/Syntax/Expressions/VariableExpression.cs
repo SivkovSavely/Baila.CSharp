@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Interpreter.Stdlib;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -12,6 +13,7 @@ public record VariableExpression(
 {
     public SyntaxNodeSpan Span { get; init; } = IdentifierToken.Span;
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return Name;
@@ -35,6 +37,7 @@ public record VariableExpression(
         visitor.VisitVariableExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"VariableExpression({Name})";

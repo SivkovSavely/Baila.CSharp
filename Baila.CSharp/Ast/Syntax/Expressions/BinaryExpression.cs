@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Runtime.Values;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -181,11 +182,13 @@ public record BinaryExpression(
         visitor.VisitBinaryExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return $"{Left.Stringify()} {BinaryOperation} {Right.Stringify()}";
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"BinaryExpression({Left} {BinaryOperation} {Right})";

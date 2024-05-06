@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Interpreter.Stdlib;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
@@ -33,11 +34,13 @@ public record TypeOfExpression(
         visitor.VisitTypeOfExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return Expression.Stringify();
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"TypeOfExpression({Expression})";

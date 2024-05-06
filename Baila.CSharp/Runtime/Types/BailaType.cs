@@ -88,9 +88,12 @@ public record BailaType(string ClassName, bool Nullable = false, List<BailaType>
         if (other == null) return false;
 
         bool genericsAreEqual;
-        if (Generics == null && other.Generics == null) genericsAreEqual = true;
-        else if (Generics == null || other.Generics == null) genericsAreEqual = false;
-        else genericsAreEqual = Generics.SequenceEqual(other.Generics);
+        if (Generics == null && other.Generics == null)
+            genericsAreEqual = true;
+        else if (Generics == null || other.Generics == null)
+            genericsAreEqual = false;
+        else
+            genericsAreEqual = Generics.SequenceEqual(other.Generics);
 
         return ClassName == other.ClassName && Nullable == other.Nullable && genericsAreEqual;
     }

@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Interpreter.Stdlib;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
@@ -29,11 +30,13 @@ public record ParenthesizedExpression(
         visitor.VisitParenthesizedExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return $"({Expression.Stringify()})";
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"ParenthesizedExpression({Expression})";

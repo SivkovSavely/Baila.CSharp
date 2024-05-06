@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Interpreter.Stdlib;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values.Abstractions;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
@@ -41,11 +42,13 @@ public record AssignmentExpression(
         visitor.VisitAssignmentExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return $"{TargetExpression.Stringify()} = {Expression.Stringify()}";
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"AssignmentExpression({TargetExpression} = {Expression})";

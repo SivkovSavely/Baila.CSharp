@@ -1,4 +1,5 @@
-﻿using Baila.CSharp.Ast.Functional;
+﻿using System.Diagnostics.CodeAnalysis;
+using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Lexer;
@@ -71,6 +72,7 @@ public record FunctionCallExpression(
         visitor.VisitFunctionCallExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return $"{FunctionHolder.Stringify()}({string.Join(", ", CallArgs.Select(x => x.Stringify()))})";

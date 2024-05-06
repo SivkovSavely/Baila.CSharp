@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Baila.CSharp.Lexer;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Runtime.Values.Abstractions;
@@ -42,11 +43,13 @@ public record StringConcatExpression(
         visitor.VisitStringConcatExpression(this);
     }
 
+    [ExcludeFromCodeCoverage]
     public string Stringify()
     {
         return "TODO";
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return $"StringConcatExpression(TODO)";

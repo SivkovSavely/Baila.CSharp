@@ -103,7 +103,8 @@ public class FunctionOverloadTests : TestsBase
         NameTable.AddConstant(
             "notifyTestAboutNumber",
             FunctionValue.WithOverload(
-                new FunctionOverload(args => { numbers.Add(args.GetInteger(0)); }, [new FunctionParameter("number", BailaType.Int)], null)));
+                new FunctionOverload(args => { numbers.Add(args.GetInteger(0)); },
+                    [new FunctionParameter("number", BailaType.Int)], null)));
 
         RunProgram("""
                    function testFunc(x: Int = 5) : Int
@@ -127,7 +128,8 @@ public class FunctionOverloadTests : TestsBase
             {
             }
             """,
-            diagnostic => diagnostic.GetErrorMessage() == "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+            diagnostic => diagnostic.GetErrorMessage() ==
+                          "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
     }
 
     [Fact]
@@ -142,6 +144,48 @@ public class FunctionOverloadTests : TestsBase
             {
             }
             """,
-            diagnostic => diagnostic.GetErrorMessage() == "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+            diagnostic => diagnostic.GetErrorMessage() ==
+                          "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+    }
+
+    [Fact]
+    public void ComplexOverloads_SuccessfullyDefined()
+    {
+        CompileProgram("""
+                       function overloadTest(a: Any) {}
+                       function overloadTest() {}
+                       function overloadTest(a: Int) {}
+                       function overloadTest(a: Float) {}
+                       function overloadTest(a: Float, b: Float) {}
+                       """);
+    }
+
+    [Fact]
+    public void ComplexOverloads_SameOverloadTwice_CompileError()
+    {
+        CompileProgramAndAssertDiagnosticExists("""
+                                                function overloadTest(a: Any) {}
+                                                function overloadTest() {}
+                                                function overloadTest(a: Int) {}
+                                                function overloadTest(a: Float) {}
+                                                function overloadTest(a: Float) {}
+                                                function overloadTest(a: Float, b: Float) {}
+                                                """,
+            d => d.GetErrorMessage() == "overload (a: Float) conflicts with overload (a: Float)"
+        );
+    }
+
+    [Fact]
+    public void ComplexOverloads_ConflictingOverloads_CompileError()
+    {
+        CompileProgramAndAssertDiagnosticExists("""
+                                                function overloadTest(a: Any) {}
+                                                function overloadTest() {}
+                                                function overloadTest(a: Int) {}
+                                                function overloadTest(a: Float) {}
+                                                function overloadTest(a: Float, b: Float = 1) {}
+                                                """,
+            d => d.GetErrorMessage() == "overload (a: Float[,b: Float]) conflicts with overload (a: Float)"
+        );
     }
 }

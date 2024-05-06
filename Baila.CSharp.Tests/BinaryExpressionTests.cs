@@ -1,12 +1,7 @@
-using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Ast.Syntax.Expressions;
-using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Types;
-using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Tests.Infrastructure;
 using FluentAssertions;
-using NSubstitute;
-using NSubstitute.ReturnsExtensions;
 using Xunit.Abstractions;
 
 namespace Baila.CSharp.Tests;

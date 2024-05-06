@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Baila.CSharp.Ast.Lexer;
-using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Types;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Visitors;

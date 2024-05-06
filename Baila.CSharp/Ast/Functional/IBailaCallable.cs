@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using Baila.CSharp.Runtime.Values;
+﻿using Baila.CSharp.Runtime.Values;
 
 namespace Baila.CSharp.Ast.Functional;
 

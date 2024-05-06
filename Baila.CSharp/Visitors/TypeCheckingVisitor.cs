@@ -7,9 +7,8 @@ using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
-using Baila.CSharp.Visitors;
 
-namespace Baila.CSharp.Ast.Parser;
+namespace Baila.CSharp.Visitors;
 
 public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceLines) : VisitorBase
 {

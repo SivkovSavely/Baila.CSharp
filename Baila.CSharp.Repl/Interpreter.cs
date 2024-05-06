@@ -107,6 +107,14 @@ public static class Interpreter
             throw new ParseException(parser.Diagnostics);
         }
 
+        var compileTimeFunctionDefiningVisitor = new CompileTimeFunctionDefiningVisitor([], sourceLines);
+        compileTimeFunctionDefiningVisitor.VisitStatements(ast);
+
+        if (compileTimeFunctionDefiningVisitor.Diagnostics.Any())
+        {
+            throw new ParseException(compileTimeFunctionDefiningVisitor.Diagnostics);
+        }
+
         var typeCheckingVisitor = new TypeCheckingVisitor([], sourceLines);
         typeCheckingVisitor.VisitStatements(ast);
 

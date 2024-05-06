@@ -76,54 +76,6 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
         }
     }
 
-    public override void VisitFunctionDefineStatement(FunctionDefineStatement stmt)
-    {
-        if (CompileTimeNameTable.ExistsVariable(stmt.Name))
-        {
-            diagnostics.Add(
-                ParserDiagnostics.BP0008_VariableIsNotAFunction(
-                    stmt.Name,
-                    stmt,
-                    GetRelevantSourceLines(stmt.Span)));
-            return;
-        }
-        
-        var overload = new FunctionOverload(
-            new StatementCallable(stmt.Body),
-            stmt.Parameters,
-            stmt.ReturnType);
-        
-        if (FunctionValue.IsRequiredParameterAfterOptionalParameter(
-                overload,
-                out var requiredParameter,
-                out var optionalParameter))
-        {
-            diagnostics.Add(
-                ParserDiagnostics.BP0013_RequiredParametersShouldBeBeforeOptionalParameters(
-                    stmt.Name,
-                    requiredParameter!.Name,
-                    optionalParameter!.Name,
-                    stmt, // TODO better to underline parameters only instead of the whole function
-                    GetRelevantSourceLines(stmt.Span)));
-        }
-        else if (!CompileTimeNameTable.TryAddFunction(stmt.Name, overload, out var conflictingOverload))
-        {
-            diagnostics.Add(
-                ParserDiagnostics.BP0007_OverloadExists(
-                    stmt,
-                    overload,
-                    conflictingOverload!,
-                    GetRelevantSourceLines(stmt.Span)));
-        }
-
-        foreach (var parameter in stmt.Parameters)
-        {
-            CompileTimeNameTable.AddVariable(parameter.Name, parameter.Type);
-        }
-
-        base.VisitFunctionDefineStatement(stmt);
-    }
-
     public override void VisitFunctionCallExpression(FunctionCallExpression expr)
     {
         base.VisitFunctionCallExpression(expr);

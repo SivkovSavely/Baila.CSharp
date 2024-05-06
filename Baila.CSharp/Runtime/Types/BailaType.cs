@@ -1,4 +1,4 @@
-﻿namespace Baila.CSharp.Typing;
+﻿namespace Baila.CSharp.Runtime.Types;
 
 public record BailaType(string ClassName, bool Nullable = false, List<BailaType>? Generics = null)
 {

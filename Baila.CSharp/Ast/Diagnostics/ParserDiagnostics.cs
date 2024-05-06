@@ -1,9 +1,9 @@
 ﻿using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Ast.Lexer;
 using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
-using Baila.CSharp.Lexer;
-using Baila.CSharp.Typing;
+using Baila.CSharp.Runtime.Types;
 
 namespace Baila.CSharp.Ast.Diagnostics;
 

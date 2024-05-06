@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Baila.CSharp.LanguageServer;
+using MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol.General;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
@@ -37,11 +38,14 @@ var server = await LanguageServer.From(
     
 await server.WaitForExit.ConfigureAwait(false);
 
-class InitializeHandler : ILanguageProtocolInitializedHandler
+namespace Baila.CSharp.LanguageServer
 {
-    public Task<Unit> Handle(InitializedParams request, CancellationToken cancellationToken)
+    class InitializeHandler : ILanguageProtocolInitializedHandler
     {
-        Console.WriteLine("Received initialize request");
-        return Unit.Task;
+        public Task<Unit> Handle(InitializedParams request, CancellationToken cancellationToken)
+        {
+            Console.WriteLine("Received initialize request");
+            return Unit.Task;
+        }
     }
 }

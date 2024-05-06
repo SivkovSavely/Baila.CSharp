@@ -1,8 +1,8 @@
-﻿using Baila.CSharp.Ast.Syntax.Expressions;
+﻿using Baila.CSharp.Ast.Lexer;
+using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
-using Baila.CSharp.Lexer;
+using Baila.CSharp.Runtime.Types;
 using Baila.CSharp.Runtime.Values;
-using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;

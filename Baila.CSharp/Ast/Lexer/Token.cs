@@ -1,6 +1,6 @@
 ﻿using Baila.CSharp.Ast.Syntax;
 
-namespace Baila.CSharp.Lexer;
+namespace Baila.CSharp.Ast.Lexer;
 
 public record Token : ISyntaxNode
 {

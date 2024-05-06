@@ -1,4 +1,4 @@
-using Baila.CSharp.Lexer;
+using Baila.CSharp.Ast.Lexer;
 using Baila.CSharp.Tests.Infrastructure;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -17,12 +17,12 @@ public class LexerTests : TestsBase
     [Fact]
     public void SimpleProgramTest()
     {
-        var lexer = new Lexer.Lexer("""
-                                    var i = 5
-                                    if i == 3 {
-                                      print("Hello world")
-                                    }
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              var i = 5
+                              if i == 3 {
+                                print("Hello world")
+                              }
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
 
@@ -58,13 +58,13 @@ public class LexerTests : TestsBase
     [Fact]
     public void EndOfLineIsNotInsertedInsideParentheses()
     {
-        var lexer = new Lexer.Lexer("""
-                                    var i = (
-                                      1,
-                                      2,
-                                      3
-                                    )
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              var i = (
+                                1,
+                                2,
+                                3
+                              )
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
 
@@ -92,13 +92,13 @@ public class LexerTests : TestsBase
     [Fact]
     public void EndOfLineIsNotInsertedInsideBrackets()
     {
-        var lexer = new Lexer.Lexer("""
-                                    var i = [
-                                      1,
-                                      2,
-                                      3
-                                    ]
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              var i = [
+                                1,
+                                2,
+                                3
+                              ]
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
 
@@ -126,12 +126,12 @@ public class LexerTests : TestsBase
     [Fact]
     public void EndOfLineIsInsertedInsideBrackets()
     {
-        var lexer = new Lexer.Lexer("""
-                                    if true {
-                                      print("Hello")
-                                      break
-                                    }
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              if true {
+                                print("Hello")
+                                break
+                              }
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
 
@@ -161,9 +161,9 @@ public class LexerTests : TestsBase
     [Fact]
     public void SingleStringHasNoInterpolation_LexesToSimpleToken()
     {
-        var lexer = new Lexer.Lexer("""
-                                    "hello world"
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              "hello world"
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
         
@@ -178,9 +178,9 @@ public class LexerTests : TestsBase
     [Fact]
     public void SingleStringHasSimpleNotIdentifierInterpolation_LexesToSimpleToken()
     {
-        var lexer = new Lexer.Lexer("""
-                                    "hello $123 world"
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              "hello $123 world"
+                              """, "test.baila");
 
         var tokens = lexer.Tokenize();
         
@@ -198,9 +198,9 @@ public class LexerTests : TestsBase
     [InlineData("ident")]
     public void SingleStringHasSimpleInterpolation_LexesToInterpolatedStringToken(string identifier)
     {
-        var lexer = new Lexer.Lexer($"""
-                                     "hello ${identifier} world"
-                                     """, "test.baila");
+        var lexer = new Lexer($"""
+                               "hello ${identifier} world"
+                               """, "test.baila");
         // compiles into concat("hello", i, " world")
 
         var tokens = lexer.Tokenize();
@@ -222,9 +222,9 @@ public class LexerTests : TestsBase
 
     [Fact] public void SingleStringHasComplexInterpolation_OnlyInterpolation_LexesToInterpolatedStringToken()
     {
-        var lexer = new Lexer.Lexer("""
-                                    "${i * 3 + 5}"
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              "${i * 3 + 5}"
+                              """, "test.baila");
         // compiles into concat((i * 3 + 5))
 
         var tokens = lexer.Tokenize();
@@ -249,9 +249,9 @@ public class LexerTests : TestsBase
     [Fact]
     public void SingleStringHasComplexInterpolation_HasStringAroundInterpolation_LexesToInterpolatedStringToken()
     {
-        var lexer = new Lexer.Lexer("""
-                                    "hello ${i * 3 + 5} world"
-                                    """, "test.baila");
+        var lexer = new Lexer("""
+                              "hello ${i * 3 + 5} world"
+                              """, "test.baila");
         // compiles into concat("hello", (i * 3 + 5), " world")
 
         var tokens = lexer.Tokenize();

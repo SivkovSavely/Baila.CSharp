@@ -1,8 +1,8 @@
 using Baila.CSharp.Ast.Functional;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Runtime.Types;
 using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Tests.Infrastructure;
-using Baila.CSharp.Typing;
 using FluentAssertions;
 using Xunit.Abstractions;
 

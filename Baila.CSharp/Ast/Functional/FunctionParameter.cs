@@ -1,5 +1,5 @@
 ﻿using Baila.CSharp.Ast.Syntax.Expressions;
-using Baila.CSharp.Typing;
+using Baila.CSharp.Runtime.Types;
 
 namespace Baila.CSharp.Ast.Functional;
 

@@ -5,8 +5,8 @@ using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Runtime.Types;
 using Baila.CSharp.Runtime.Values;
-using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Visitors;
 

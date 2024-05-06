@@ -1,7 +1,7 @@
 ﻿// https://codesandbox.io/p/sandbox/naughty-wu-yh75d2
 
 using System.Text;
-using Baila.CSharp.Lexer;
+using Baila.CSharp.Ast.Lexer;
 
 if (args.Length >= 1)
 {

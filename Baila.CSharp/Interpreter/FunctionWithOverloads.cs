@@ -2,8 +2,6 @@
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Values;
-using Baila.CSharp.Runtime.Values.Abstractions;
-using Baila.CSharp.Typing;
 
 namespace Baila.CSharp.Interpreter;
 

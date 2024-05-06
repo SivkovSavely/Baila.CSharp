@@ -1,7 +1,7 @@
-﻿using Baila.CSharp.Ast.Syntax;
+﻿using Baila.CSharp.Ast.Lexer;
+using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
-using Baila.CSharp.Lexer;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 

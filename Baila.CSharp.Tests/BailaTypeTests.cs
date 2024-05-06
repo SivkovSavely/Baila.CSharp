@@ -1,5 +1,5 @@
-﻿using Baila.CSharp.Tests.Infrastructure;
-using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Runtime.Types;
+using Baila.CSharp.Tests.Infrastructure;
 using FluentAssertions;
 using Xunit.Abstractions;
 

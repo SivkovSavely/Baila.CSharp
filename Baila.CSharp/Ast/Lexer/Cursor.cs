@@ -1,4 +1,4 @@
-﻿namespace Baila.CSharp.Lexer;
+﻿namespace Baila.CSharp.Ast.Lexer;
 
 public class Cursor(int position, int column, int line, string filename) : ICloneable
 {

@@ -1,6 +1,6 @@
-﻿using Baila.CSharp.Typing;
+﻿using Baila.CSharp.Runtime.Types;
 
-namespace Baila.CSharp.Runtime.Values.Abstractions;
+namespace Baila.CSharp.Runtime.Values;
 
 public interface IValue
 {

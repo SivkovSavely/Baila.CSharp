@@ -1,6 +1,8 @@
 ﻿using Baila.CSharp.Ast.Diagnostics;
+using Baila.CSharp.Ast.Lexer;
+using Baila.CSharp.Ast.Parser;
 using Baila.CSharp.Ast.Syntax.Statements;
-using Baila.CSharp.Runtime.Values.Abstractions;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Repl;
@@ -75,7 +77,7 @@ public static class Interpreter
 
         var sourceLines = sourceCode.Split("\n");
         
-        var lexer = new Lexer.Lexer(
+        var lexer = new Lexer(
             sourceCode,
             filename);
         var tokens = lexer.Tokenize();
@@ -99,7 +101,7 @@ public static class Interpreter
         }
 #endif
 
-        var parser = new Parser.Parser(filename, sourceCode, tokens);
+        var parser = new Parser(filename, sourceCode, tokens);
         var ast = parser.BuildAst();
 
         if (parser.Diagnostics.Any())

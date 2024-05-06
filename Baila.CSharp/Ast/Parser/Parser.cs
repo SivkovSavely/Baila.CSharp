@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Text;
 using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Functional;
+using Baila.CSharp.Ast.Lexer;
 using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
-using Baila.CSharp.Lexer;
-using Baila.CSharp.Typing;
+using Baila.CSharp.Runtime.Types;
 
-namespace Baila.CSharp.Parser;
+namespace Baila.CSharp.Ast.Parser;
 
 public class Parser(string filename, string source, List<Token> tokens, CancellationToken? cancellationToken = null)
 {

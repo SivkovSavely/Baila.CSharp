@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Baila.CSharp.Interpreter.Stdlib;
-using Baila.CSharp.Runtime.Values.Abstractions;
-using Baila.CSharp.Typing;
+using Baila.CSharp.Runtime.Types;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Expressions;

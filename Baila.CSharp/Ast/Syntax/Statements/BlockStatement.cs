@@ -1,5 +1,5 @@
-﻿using Baila.CSharp.Interpreter.Stdlib;
-using Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Ast.Lexer;
+using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Visitors;
 
 namespace Baila.CSharp.Ast.Syntax.Statements;

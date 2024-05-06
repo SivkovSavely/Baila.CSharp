@@ -1,6 +1,6 @@
 ﻿using Baila.CSharp.Ast.Syntax.Statements;
 
-namespace Baila.CSharp.Parser;
+namespace Baila.CSharp.Ast.Parser;
 
 public static class ReturnStatementSearchingStatementTraverser
 {

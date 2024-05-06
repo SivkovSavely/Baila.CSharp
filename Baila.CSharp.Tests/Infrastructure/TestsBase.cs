@@ -4,8 +4,8 @@ using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
-using Baila.CSharp.Runtime.Values.Abstractions;
-using Baila.CSharp.Typing;
+using Baila.CSharp.Runtime.Types;
+using Baila.CSharp.Runtime.Values;
 using FluentAssertions.Formatting;
 using Xunit.Abstractions;
 

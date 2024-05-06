@@ -2,7 +2,7 @@
 using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Syntax;
 
-namespace Baila.CSharp.Lexer;
+namespace Baila.CSharp.Ast.Lexer;
 
 public class Lexer(
     string source,

@@ -1,5 +1,5 @@
-﻿using Baila.CSharp.Ast.Syntax;
-using Baila.CSharp.Lexer;
+﻿using Baila.CSharp.Ast.Lexer;
+using Baila.CSharp.Ast.Syntax;
 
 namespace Baila.CSharp.Ast.Diagnostics;
 

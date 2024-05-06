@@ -51,6 +51,11 @@ public class IfElseStatementTests : TestsBase
                 """)]
     public void ThenBranchOnly_Block_TestParsing(string source)
     {
+        NameTable.AddVariableInferred("a", new IntValue(10));
+        NameTable.AddVariableInferred("b", new IntValue(11));
+        NameTable.AddVariableInferred("body", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
+
         var program = CompileProgram(source);
 
         AssertAst(
@@ -114,6 +119,11 @@ public class IfElseStatementTests : TestsBase
                 """)]
     public void ThenBranchOnly_OneStatement_TestParsing(string source)
     {
+        NameTable.AddVariableInferred("a", new IntValue(10));
+        NameTable.AddVariableInferred("b", new IntValue(11));
+        NameTable.AddVariableInferred("body", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
+
         var program = CompileProgram(source);
 
         AssertAst(
@@ -222,6 +232,12 @@ public class IfElseStatementTests : TestsBase
                 """)]
     public void ThenBranchOnly_InnerIf_TestParsing(string source)
     {
+        NameTable.AddVariableInferred("a", new IntValue(10));
+        NameTable.AddVariableInferred("b", new IntValue(11));
+        NameTable.AddVariableInferred("c", new IntValue(12));
+        NameTable.AddVariableInferred("body", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
+
         var program = CompileProgram(source);
 
         AssertAst(
@@ -414,6 +430,13 @@ public class IfElseStatementTests : TestsBase
                 """)]
     public void ThenBranchAndElseBranch_Block_TestParsing(string source)
     {
+        NameTable.AddVariableInferred("a", new IntValue(10));
+        NameTable.AddVariableInferred("b", new IntValue(11));
+        NameTable.AddVariableInferred("body", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
+        NameTable.AddVariableInferred("body2", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
+        
         var program = CompileProgram(source);
 
         AssertAst(
@@ -473,7 +496,6 @@ public class IfElseStatementTests : TestsBase
     [InlineData("if 3 != 3 { trueFunction() } else { falseFunction() }", "falseFunction")]
     public void EvaluationTest(string source, string expectedCalledFunctionName)
     {
-        var program = CompileProgram(source);
         string? actualCalledFunctionName = null;
 
         var trueFunction = Substitute.For<IBailaCallable>();
@@ -484,6 +506,7 @@ public class IfElseStatementTests : TestsBase
         falseFunction.Call(Arg.Any<BailaCallableArgs>()).ReturnsNull().AndDoes(_ => actualCalledFunctionName = "falseFunction");
         NameTable.AddConstant("falseFunction", FunctionValue.WithOverload(new FunctionOverload(falseFunction, [], BailaType.String)));
         
+        var program = CompileProgram(source);
         program.Execute();
 
         actualCalledFunctionName.Should().Be(expectedCalledFunctionName);

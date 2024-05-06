@@ -121,20 +121,19 @@ public class FunctionOverloadTests : TestsBase
     [Fact]
     public void FunctionWithOneOverload_RequiredParameterAfterOptionalParameter_CompileError()
     {
-        CompileProgramAndAssertError<Exception>(
+        CompileProgramAndAssertDiagnosticExists(
             """
             function testFunc(x: Int = 5, y: Int) : Int
             {
             }
             """,
-            optionalMessage:
-            "In function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+            diagnostic => diagnostic.GetErrorMessage() == "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
     }
 
     [Fact]
     public void FunctionWithTwoOverloads_RequiredParameterAfterOptionalParameter_CompileError()
     {
-        CompileProgramAndAssertError<Exception>(
+        CompileProgramAndAssertDiagnosticExists(
             """
             function testFunc() : Int
             {
@@ -143,7 +142,6 @@ public class FunctionOverloadTests : TestsBase
             {
             }
             """,
-            optionalMessage:
-            "In function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
+            diagnostic => diagnostic.GetErrorMessage() == "in function 'testFunc', required parameter 'y' cannot be after an optional parameter 'x'");
     }
 }

@@ -189,16 +189,19 @@ public class NameTable
     public static void AddVariable(string name, BailaType type, IValue value)
     {
         CurrentScope.AddVariable(name, type, value);
+        CompileTimeNameTable.AddVariable(name, type);
     }
 
     public static void AddVariableInferred(string name, IValue value)
     {
         CurrentScope.AddVariableInferred(name, value);
+        CompileTimeNameTable.AddVariable(name, value.GetBailaType());
     }
 
     public static void AddConstant(string name, IValue value)
     {
         CurrentScope.AddConstant(name, value);
+        CompileTimeNameTable.AddConstant(name, value.GetBailaType());
     }
 
     public static void Set(string name, IValue value)

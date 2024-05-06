@@ -16,6 +16,8 @@ public class ForStatementTests : TestsBase
 {
     public ForStatementTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
+        NameTable.AddVariableInferred("body", FunctionValue.WithOverload(
+            new FunctionOverload(_ => { }, [], null)));
     }
 
     [Theory]
@@ -98,10 +100,6 @@ public class ForStatementTests : TestsBase
     [Fact]
     public void TestUpperBoundInclusivity()
     {
-        var program = CompileProgram("""
-                                     for i = 1 to 5 { print(i) }
-                                     """);
-
         var counts = 0;
 
         var callback = Substitute.For<IBailaCallable>();
@@ -118,6 +116,10 @@ public class ForStatementTests : TestsBase
             )
         );
         NameTable.AddConstant("print", function);
+
+        var program = CompileProgram("""
+                                     for i = 1 to 5 { print(i) }
+                                     """);
 
         program.Execute();
 

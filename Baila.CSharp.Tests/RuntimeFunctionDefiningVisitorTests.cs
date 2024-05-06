@@ -30,8 +30,8 @@ public class RuntimeFunctionDefiningVisitorTests : TestsBase
     [Fact]
     public void FunctionNotDefined_Error()
     {
-        RunProgramAndAssertError<Exception>(
-            CompileProgram("test();"),
-            "ReferenceError: 'test' is not defined");
+        RunProgramAndAssertDiagnosticExists(
+            "test();",
+            d => d.GetErrorMessage() == "'test' is not defined");
     }
 }

@@ -40,6 +40,8 @@ public class LexerTests : TestsBase
         AssertToken(tokens, ++i, TokenType.NumberLiteral, "3");
         AssertToken(tokens, ++i, TokenType.LeftCurly);
 
+        // ReSharper disable once AccessToModifiedClosure
+        AssertOptionalToken(tokens, i, () => ++i, TokenType.EndOfLine);
         AssertToken(tokens, ++i, TokenType.Identifier, "print");
         AssertToken(tokens, ++i, TokenType.LeftParen);
         AssertToken(tokens, ++i, TokenType.StringLiteral, "Hello world");
@@ -138,6 +140,8 @@ public class LexerTests : TestsBase
         AssertToken(tokens, ++i, TokenType.True);
         AssertToken(tokens, ++i, TokenType.LeftCurly);
 
+        // ReSharper disable once AccessToModifiedClosure
+        AssertOptionalToken(tokens, i, () => ++i, TokenType.EndOfLine);
         AssertToken(tokens, ++i, TokenType.Identifier, "print");
         AssertToken(tokens, ++i, TokenType.LeftParen);
         AssertToken(tokens, ++i, TokenType.StringLiteral, "Hello");
@@ -291,6 +295,29 @@ public class LexerTests : TestsBase
             if (value != null && value != token.Value)
             {
                 Assert.Fail($"Expected token '{token.Type.Type}' to have value '{value}', found '{token.Value}'");
+            }
+        }
+        catch (XunitException)
+        {
+            PrintTokens(tokens);
+            throw;
+        }
+    }
+
+    private void AssertOptionalToken(List<Token> tokens, int i, Action doIfTokenMatched, TokenType type, string? value = null)
+    {
+        i++;
+        try
+        {
+            if (i >= tokens.Count)
+            {
+                return;
+            }
+
+            var token = tokens[i];
+            if (type == token.Type && (value == null || value != token.Value))
+            {
+                doIfTokenMatched();
             }
         }
         catch (XunitException)

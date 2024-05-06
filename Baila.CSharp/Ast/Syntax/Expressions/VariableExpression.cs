@@ -19,8 +19,9 @@ public record VariableExpression(
 
     public BailaType GetBailaType()
     {
+        var function = CompileTimeNameTable.GetFunction(Name);
         var variable = CompileTimeNameTable.Get(Name);
-        return variable?.Type!;
+        return function != null ? BailaType.Function : variable?.Type!; // TODO somehow resolve the method group with some functional type
     }
 
     public IValue Evaluate()

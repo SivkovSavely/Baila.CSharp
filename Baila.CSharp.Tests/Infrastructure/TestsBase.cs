@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System.Text;
+using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
@@ -17,6 +19,7 @@ public class TestsBase
     protected TestsBase(ITestOutputHelper testOutputHelper)
     {
         NameTable.CurrentScope = new NameTable.Scope();
+        CompileTimeNameTable.CurrentScope = new CompileTimeNameTable.Scope();
         Formatter.AddFormatter(new ToStringFormatter());
     }
 
@@ -28,9 +31,69 @@ public class TestsBase
             .ToArray();
     }
 
-    protected static Statements CompileProgram(string source, string filename = "test.baila")
+    protected static Statements CompileProgram(string source, string filename = "test.baila",
+        bool shouldFailTest = true)
     {
-        return Repl.Interpreter.Compile(source, filename);
+        try
+        {
+            return Repl.Interpreter.Compile(source, filename);
+        }
+        catch (ParseException e)
+        {
+            if (shouldFailTest)
+            {
+                var errorSb = new StringBuilder();
+                errorSb.Append($"ParseException was caught with {e.Diagnostics.Count()} diagnostics");
+
+                if (e.Diagnostics.Any())
+                {
+                    errorSb.AppendLine();
+                }
+
+                foreach (var diagnostic in e.Diagnostics)
+                {
+                    errorSb.Append($"[{diagnostic.GetCode()}] ");
+                    errorSb.AppendLine(diagnostic.GetErrorMessage());
+
+                    errorSb.AppendLine(diagnostic.GetFilename());
+
+                    var maxLines = source.Split("\n").Length.ToString().Length;
+
+                    foreach (var diagnosticLineSpan in diagnostic.GetLines())
+                    {
+                        var extraSpaces = maxLines - diagnosticLineSpan.LineNumber.ToString().Length;
+
+                        var lineOffset = 2 + maxLines;
+
+                        errorSb.Append("  ");
+                        errorSb.Append(new string(' ', extraSpaces));
+                        errorSb.Append(diagnosticLineSpan.LineNumber);
+                        errorSb.Append(" | ");
+                        errorSb.AppendLine(diagnosticLineSpan.FullLine);
+
+                        errorSb.Append(new string(' ', lineOffset));
+                        errorSb.Append(" | ");
+                        errorSb.Append(new string(' ', diagnosticLineSpan.StartColumn - 1));
+                        errorSb.Append(new string('^', diagnosticLineSpan.Length));
+
+                        if (diagnosticLineSpan.Length == 1)
+                        {
+                            errorSb.AppendLine(
+                                $"-- {diagnosticLineSpan.StartColumn}");
+                        }
+                        else
+                        {
+                            errorSb.AppendLine(
+                                $"-- {diagnosticLineSpan.StartColumn}..{diagnosticLineSpan.StartColumn + diagnosticLineSpan.Length - 1}");
+                        }
+                    }
+                }
+
+                Assert.Fail(errorSb.ToString());
+            }
+
+            throw;
+        }
     }
 
     protected static IValue? RunProgram(string source, string filename = "test.baila")
@@ -40,13 +103,33 @@ public class TestsBase
         return program.LastEvaluatedValue;
     }
 
-    protected static void CompileProgramAndAssertError<TError>(string source, string? optionalMessage = null, string filename = "test.baila")
+    protected static void CompileProgramAndAssertError<TError>(string source, string? optionalMessage = null,
+        string filename = "test.baila")
         where TError : Exception
     {
         var exception = Assert.Throws<TError>(() => CompileProgram(source, filename));
         if (optionalMessage != null)
         {
             Assert.Equal(optionalMessage, exception.Message);
+        }
+    }
+
+    protected static void CompileProgramAndAssertDiagnosticExists(string source,
+        Func<IDiagnostic, bool> diagnosticMatcher,
+        string filename = "test.baila")
+    {
+        try
+        {
+            CompileProgram(source, filename, shouldFailTest: false);
+        }
+        catch (ParseException e)
+        {
+            if (e.Diagnostics.Any(diagnosticMatcher))
+            {
+                return;
+            }
+
+            Assert.Fail("None of the diagnostics matched");
         }
     }
 
@@ -57,6 +140,26 @@ public class TestsBase
         if (optionalMessage != null)
         {
             Assert.Equal(optionalMessage, exception.Message);
+        }
+    }
+
+    protected static void RunProgramAndAssertDiagnosticExists(string source,
+        Func<IDiagnostic, bool> diagnosticMatcher,
+        string filename = "test.baila")
+    {
+        try
+        {
+            var program = CompileProgram(source, filename, shouldFailTest: false);
+            program.Execute();
+        }
+        catch (ParseException e)
+        {
+            if (e.Diagnostics.Any(diagnosticMatcher))
+            {
+                return;
+            }
+
+            Assert.Fail("None of the diagnostics matched");
         }
     }
 
@@ -88,7 +191,8 @@ public class TestsBase
 
     protected static BailaType GetBailaTypeByName(string typeName)
     {
-        return BuiltInBailaTypes.FirstOrDefault(f => f.Name == typeName)?.GetValue(null) as BailaType ?? new BailaType(typeName);
+        return BuiltInBailaTypes.FirstOrDefault(f => f.Name == typeName)?.GetValue(null) as BailaType ??
+               new BailaType(typeName);
     }
 }
 
@@ -97,10 +201,11 @@ file class ToStringFormatter : IValueFormatter
     public bool CanHandle(object? value)
     {
         // You can add additional logic here to only handle specific types
-        return value is BailaType; 
+        return value is BailaType;
     }
 
-    public void Format(object value, FormattedObjectGraph formattedGraph, FormattingContext context, FormatChild formatChild)
+    public void Format(object value, FormattedObjectGraph formattedGraph, FormattingContext context,
+        FormatChild formatChild)
     {
         // Use the object's ToString method for formatting
         formattedGraph.AddFragment(value.ToString());

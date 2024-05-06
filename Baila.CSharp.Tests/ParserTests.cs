@@ -28,12 +28,13 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("");
 
-                        expression.Expressions.Should().ContainSingle()
-                            .Which.Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Single(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("123");
     }
@@ -54,12 +55,13 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("Abc ");
 
-                        expression.Expressions.Should().ContainSingle()
-                            .Which.Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Single(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("Abc 123");
     }
@@ -80,12 +82,13 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("", " Def");
 
-                        expression.Expressions.Should().ContainSingle()
-                            .Which.Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Single(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("123 Def");
     }
@@ -106,12 +109,13 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("Abc ", " Def");
 
-                        expression.Expressions.Should().ContainSingle()
-                            .Which.Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Single(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("Abc 123 Def");
     }
@@ -132,15 +136,18 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("Abc ", "", " Def");
 
-                        expression.Expressions.Should().HaveCount(2)
-                            .And.Subject.First().Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
-    
-                        expression.Expressions.Skip(1).First().Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(456);
+                        expression.Expressions.Should().HaveCount(2);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.First(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Skip(1).First(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 456 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("Abc 123456 Def");
     }
@@ -161,15 +168,18 @@ public class ParserTests : TestsBase
                     {
                         expression.FixedStrings.Should().Equal("Abc ", " Ghi ", " Def");
 
-                        expression.Expressions.Should().HaveCount(2)
-                            .And.Subject.First().Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(123);
-    
-                        expression.Expressions.Skip(1).First().Should().BeOfType<IntValueExpression>()
-                            .Which.Value.Should().Be(456);
+                        expression.Expressions.Should().HaveCount(2);
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.First(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 123 }
+                        );
+                        a.AssertInnerFunc<ParenthesizedExpression>(
+                            expr: expression.Expressions.Skip(1).First(),
+                            assertFunc: e => e.Expression is IntValueExpression { Value: 456 }
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("Abc 123 Ghi 456 Def");
     }
@@ -191,12 +201,14 @@ public class ParserTests : TestsBase
                     expression =>
                     {
                         expression.FixedStrings.Should().Equal("Abc ");
-                        expression.Expressions.Should().ContainSingle()
-                            .Which.Should().BeOfType<VariableExpression>()
-                            .Which.Name.Should().Be("def");
+
+                        a.AssertInnerFunc<VariableExpression>(
+                            expr: expression.Expressions.Single(),
+                            assertFunc: e => e.Name == "def"
+                        );
                     });
             });
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("Abc def string");
     }
@@ -210,7 +222,7 @@ public class ParserTests : TestsBase
                                  s = "abc"
                                  s2
                                  """);
-        
+
         ast.Execute();
         ast.LastEvaluatedValue?.GetAsString().Should().Be("123xyz456");
     }

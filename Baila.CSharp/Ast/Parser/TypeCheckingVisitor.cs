@@ -5,6 +5,7 @@ using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter;
 using Baila.CSharp.Interpreter.Stdlib;
+using Baila.CSharp.Runtime.Values;
 using Baila.CSharp.Typing;
 using Baila.CSharp.Visitors;
 
@@ -78,7 +79,6 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
 
     public override void VisitFunctionDefineStatement(FunctionDefineStatement stmt)
     {
-        base.VisitFunctionDefineStatement(stmt);
         if (CompileTimeNameTable.ExistsVariable(stmt.Name))
         {
             diagnostics.Add(
@@ -93,8 +93,21 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
             new StatementCallable(stmt.Body),
             stmt.Parameters,
             stmt.ReturnType);
-
-        if (!CompileTimeNameTable.TryAddFunction(stmt.Name, overload, out var conflictingOverload))
+        
+        if (FunctionValue.IsRequiredParameterAfterOptionalParameter(
+                overload,
+                out var requiredParameter,
+                out var optionalParameter))
+        {
+            diagnostics.Add(
+                ParserDiagnostics.BP0013_RequiredParametersShouldBeBeforeOptionalParameters(
+                    stmt.Name,
+                    requiredParameter!.Name,
+                    optionalParameter!.Name,
+                    stmt, // TODO better to underline parameters only instead of the whole function
+                    GetRelevantSourceLines(stmt.Span)));
+        }
+        else if (!CompileTimeNameTable.TryAddFunction(stmt.Name, overload, out var conflictingOverload))
         {
             diagnostics.Add(
                 ParserDiagnostics.BP0007_OverloadExists(
@@ -103,6 +116,13 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
                     conflictingOverload!,
                     GetRelevantSourceLines(stmt.Span)));
         }
+
+        foreach (var parameter in stmt.Parameters)
+        {
+            CompileTimeNameTable.AddVariable(parameter.Name, parameter.Type);
+        }
+
+        base.VisitFunctionDefineStatement(stmt);
     }
 
     public override void VisitFunctionCallExpression(FunctionCallExpression expr)
@@ -167,6 +187,11 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
                     toType,
                     GetRelevantSourceLines(syntaxNode.Span)));
         }
+    }
+
+    public override void VisitForStatement(ForStatement stmt)
+    {
+        CompileTimeNameTable.AddVariable("i", stmt.InitialValue.GetBailaType()!);
     }
 
     private string[] GetRelevantSourceLines(SyntaxNodeSpan span)

@@ -193,7 +193,7 @@ public record BinaryExpression(
         return $"BinaryExpression({Left} {BinaryOperation} {Right})";
     }
     
-    private (Operator op, Func<IValue, IValue, IValue> callback) GetOperator(BinaryExpression expression)
+    public static (Operator op, Func<IValue, IValue, IValue> callback) GetOperator(BinaryExpression expression)
     {
         var (op, callback) = BinaryOperators.FirstOrDefault(operatorCallbackPair =>
         {
@@ -209,5 +209,26 @@ public record BinaryExpression(
         }
 
         return (op, callback);
+    }
+    
+    public static bool TryGetOperator(BinaryExpression expression, out (Operator op, Func<IValue, IValue, IValue> callback)? op)
+    {
+        var kvPairs = BinaryOperators.Where(operatorCallbackPair =>
+        {
+            var (op, _) = operatorCallbackPair;
+            return op.Operation == expression.BinaryOperation &&
+                   expression.Left.GetBailaType()!.IsImplicitlyConvertibleTo(op.LeftType) &&
+                   expression.Right.GetBailaType()!.IsImplicitlyConvertibleTo(op.RightType);
+        }).ToArray();
+
+        if (kvPairs.Length == 0)
+        {
+            op = null;
+            return false;
+        }
+
+        var kvPair = kvPairs.First();
+        op = (kvPair.Key, kvPair.Value);
+        return true;
     }
 }

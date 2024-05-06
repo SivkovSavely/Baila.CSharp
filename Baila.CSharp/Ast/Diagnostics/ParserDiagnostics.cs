@@ -100,6 +100,12 @@ public class ParserDiagnostics
             $"in function '{functionName}', required parameter '{reqParam}' cannot be after an optional parameter '{optParam}'",
             node,
             relevantSourceLines);
+    public static ParserDiagnostic BP0014_BinaryOperatorCannotBeUsedOnTypes(string opSymbol, BailaType leftType, BailaType rightType, IExpression node, string[] relevantSourceLines) =>
+        new(
+            "BP0014",
+            $"cannot use the operator '{opSymbol}' on operands of types '{leftType}' and '{rightType}'",
+            node,
+            relevantSourceLines);
 }
 
 public class ParserDiagnostic : IDiagnostic

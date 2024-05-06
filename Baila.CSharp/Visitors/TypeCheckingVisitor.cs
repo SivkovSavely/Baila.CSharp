@@ -145,6 +145,23 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
         CompileTimeNameTable.AddVariable("i", stmt.InitialValue.GetBailaType()!);
     }
 
+    public override void VisitBinaryExpression(BinaryExpression expr)
+    {
+        base.VisitBinaryExpression(expr);
+
+        var found = BinaryExpression.TryGetOperator(expr, out _);
+        if (!found)
+        {
+            diagnostics.Add(
+                ParserDiagnostics.BP0014_BinaryOperatorCannotBeUsedOnTypes(
+                    expr.BinaryOperation.Op,
+                    expr.Left.GetBailaType()!,
+                    expr.Right.GetBailaType()!,
+                    expr,
+                    GetRelevantSourceLines(expr.Span)));
+        }
+    }
+
     private string[] GetRelevantSourceLines(SyntaxNodeSpan span)
     {
         return sourceLines[(span.StartLine - 1)..span.EndLine];

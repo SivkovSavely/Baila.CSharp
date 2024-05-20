@@ -1,9 +1,11 @@
-﻿using Baila.CSharp.Ast.Diagnostics;
+﻿using System.Linq.Expressions;
+using Baila.CSharp.Ast.Diagnostics;
 using Baila.CSharp.Ast.Syntax;
 using Baila.CSharp.Ast.Syntax.Expressions;
 using Baila.CSharp.Ast.Syntax.Statements;
 using Baila.CSharp.Interpreter.Stdlib;
 using Baila.CSharp.Runtime.Types;
+using BinaryExpression = Baila.CSharp.Ast.Syntax.Expressions.BinaryExpression;
 
 namespace Baila.CSharp.Visitors;
 
@@ -154,6 +156,22 @@ public class TypeCheckingVisitor(List<IDiagnostic> diagnostics, string[] sourceL
                     expr.BinaryOperation.Op,
                     expr.Left.GetBailaType()!,
                     expr.Right.GetBailaType()!,
+                    expr,
+                    GetRelevantSourceLines(expr.Span)));
+        }
+    }
+
+    public override void VisitPrefixUnaryExpression(PrefixUnaryExpression expr)
+    {
+        base.VisitPrefixUnaryExpression(expr);
+
+        var found = PrefixUnaryExpression.TryGetOperator(expr, out _);
+        if (!found)
+        {
+            diagnostics.Add(
+                ParserDiagnostics.BP0015_UnaryOperatorCannotBeUsedOnType(
+                    expr.Op.Op,
+                    expr.OperandExpression.GetBailaType()!,
                     expr,
                     GetRelevantSourceLines(expr.Span)));
         }

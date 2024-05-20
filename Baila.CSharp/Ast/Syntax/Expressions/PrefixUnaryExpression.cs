@@ -76,21 +76,36 @@ public record PrefixUnaryExpression(
     {
         return $"PrefixUnaryExpression({Op} {OperandExpression})";
     }
-
-    private (Operator op, Func<IValue, IValue> callback) GetOperator(PrefixUnaryExpression expression)
+    
+    public static (Operator op, Func<IValue, IValue> callback) GetOperator(PrefixUnaryExpression expression)
     {
-        var (op, callback) = UnaryOperators.FirstOrDefault(operatorCallbackPair =>
-        {
-            var (op, _) = operatorCallbackPair;
-            return op.Operation == expression.Op &&
-                   expression.OperandExpression.GetBailaType()!.IsImplicitlyConvertibleTo(op.OperandType);
-        });
+        var found = TryGetOperator(expression, out var op);
 
-        if (op is null)
+        if (!found || !op.HasValue)
         {
             throw new Exception($"Cannot use the operator '{expression.Op.Op}' on an operand of type '{expression.OperandExpression.GetBailaType()}'");
         }
 
-        return (op, callback);
+        return (op.Value.op, op.Value.callback);
+    }
+
+    public static bool TryGetOperator(PrefixUnaryExpression expression, out (Operator op, Func<IValue, IValue> callback)? op)
+    {
+        var kvPairs = UnaryOperators.Where(operatorCallbackPair =>
+        {
+            var (op, _) = operatorCallbackPair;
+            return op.Operation == expression.Op &&
+                   expression.OperandExpression.GetBailaType()!.IsImplicitlyConvertibleTo(op.OperandType);
+        }).ToArray();
+
+        if (kvPairs.Length == 0)
+        {
+            op = null;
+            return false;
+        }
+
+        var kvPair = kvPairs.First();
+        op = (kvPair.Key, kvPair.Value);
+        return true;
     }
 }

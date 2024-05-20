@@ -195,20 +195,14 @@ public record BinaryExpression(
     
     public static (Operator op, Func<IValue, IValue, IValue> callback) GetOperator(BinaryExpression expression)
     {
-        var (op, callback) = BinaryOperators.FirstOrDefault(operatorCallbackPair =>
-        {
-            var (op, _) = operatorCallbackPair;
-            return op.Operation == expression.BinaryOperation &&
-                   expression.Left.GetBailaType()!.IsImplicitlyConvertibleTo(op.LeftType) &&
-                   expression.Right.GetBailaType()!.IsImplicitlyConvertibleTo(op.RightType);
-        });
+        var found = TryGetOperator(expression, out var op);
 
-        if (op is null)
+        if (!found || !op.HasValue)
         {
             throw new Exception($"Cannot use the operator '{expression.BinaryOperation.Op}' on operands of types '{expression.Left.GetBailaType()}' and '{expression.Right.GetBailaType()}'");
         }
 
-        return (op, callback);
+        return (op.Value.op, op.Value.callback);
     }
     
     public static bool TryGetOperator(BinaryExpression expression, out (Operator op, Func<IValue, IValue, IValue> callback)? op)

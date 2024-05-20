@@ -106,6 +106,12 @@ public class ParserDiagnostics
             $"cannot use the operator '{opSymbol}' on operands of types '{leftType}' and '{rightType}'",
             node,
             relevantSourceLines);
+    public static ParserDiagnostic BP0015_UnaryOperatorCannotBeUsedOnType(string opSymbol, BailaType operandType, IExpression node, string[] relevantSourceLines) =>
+        new(
+            "BP0015",
+            $"cannot use the operator '{opSymbol}' on an operand of type '{operandType}'",
+            node,
+            relevantSourceLines);
 }
 
 public class ParserDiagnostic : IDiagnostic

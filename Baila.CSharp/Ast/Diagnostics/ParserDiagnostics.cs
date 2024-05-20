@@ -90,13 +90,13 @@ public class ParserDiagnostics
             relevantSourceLines);
     public static ParserDiagnostic BP0012_HaveToAssignValueToAnyVariable(string name, VariableDefineStatement statement, string[] relevantSourceLines) =>
         new(
-            "BP0011",
+            "BP0012",
             $"variable '{name}' has to be assigned value because it has type 'Any'",
             statement,
             relevantSourceLines);
     public static ParserDiagnostic BP0013_RequiredParametersShouldBeBeforeOptionalParameters(string functionName, string reqParam, string optParam, ISyntaxNode node, string[] relevantSourceLines) =>
         new(
-            "BP0011",
+            "BP0013",
             $"in function '{functionName}', required parameter '{reqParam}' cannot be after an optional parameter '{optParam}'",
             node,
             relevantSourceLines);
